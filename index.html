@@ -12,6 +12,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- SheetJS (XLSX) untuk Import & Export Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -373,7 +375,7 @@
 
       <!-- TAB 2: SPP & SYAHRIAH SISWA -->
       <section id="tab-spp" class="tab-content hidden space-y-6">
-        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <div class="flex flex-wrap gap-2">
             <button type="button" onclick="switchSppSubtab('matriks')" id="subbtn-matriks" class="spp-subbtn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-madrasah-700 text-white transition">
               <i class="fa-solid fa-table-cells mr-1.5"></i>Kartu SPP Bulanan
@@ -387,13 +389,17 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="openModal('modal-excel-siswa')" class="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-file-excel text-emerald-700"></i>
+              <span>Import / Export Excel</span>
+            </button>
             <button type="button" onclick="openModal('modal-kwitansi-spp')" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-emerald-950 text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-2xs transition">
               <i class="fa-solid fa-receipt"></i>
-              <span>Cetak Kwitansi SPP / Tunggakan</span>
+              <span>Cetak Kwitansi</span>
             </button>
             <button type="button" onclick="printMenuReport('spp')" class="px-3.5 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
               <i class="fa-solid fa-print text-madrasah-700"></i>
-              <span>Cetak Rekap SPP</span>
+              <span>Cetak Rekap</span>
             </button>
             <button type="button" onclick="openModal('modal-tambah-siswa')" class="px-3.5 py-2 rounded-xl border border-madrasah-600 text-madrasah-700 hover:bg-madrasah-50 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
               <i class="fa-solid fa-user-plus"></i>
@@ -401,7 +407,7 @@
             </button>
             <button type="button" onclick="openModal('modal-bayar-spp')" class="px-4 py-2 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs transition">
               <i class="fa-solid fa-money-bill-wave"></i>
-              <span>Input Pembayaran SPP</span>
+              <span>Input SPP</span>
             </button>
           </div>
         </div>
@@ -485,11 +491,11 @@
             <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex flex-col justify-between">
               <div>
                 <span class="text-xs font-bold text-emerald-700 uppercase">Cetak Rekap & Kwitansi</span>
-                <p class="text-xs text-emerald-800 mt-1">Unduh daftar tunggakan CSV atau cetak kwitansi pembayaran/tunggakan.</p>
+                <p class="text-xs text-emerald-800 mt-1">Unduh daftar tunggakan Excel/CSV atau cetak kwitansi pembayaran/tunggakan.</p>
               </div>
               <div class="flex flex-wrap gap-2 mt-2">
-                <button type="button" onclick="exportTunggakanCSV()" class="px-3 py-2 rounded-xl bg-madrasah-700 text-white text-xs font-bold hover:bg-madrasah-800 transition">
-                  <i class="fa-solid fa-file-excel mr-1"></i>CSV
+                <button type="button" onclick="exportTunggakanExcel()" class="px-3 py-2 rounded-xl bg-madrasah-700 text-white text-xs font-bold hover:bg-madrasah-800 transition">
+                  <i class="fa-solid fa-file-excel mr-1"></i>Excel
                 </button>
                 <button type="button" onclick="openModal('modal-kwitansi-spp')" class="px-3 py-2 rounded-xl bg-amber-500 text-emerald-950 text-xs font-bold hover:bg-amber-600 transition">
                   <i class="fa-solid fa-receipt mr-1"></i>Kwitansi Tunggakan
@@ -517,6 +523,22 @@
         </div>
 
         <div id="spp-view-siswa" class="spp-subview hidden bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/70">
+            <div>
+              <h3 class="font-bold text-sm text-slate-900">Master Data Siswa Terdaftar</h3>
+              <p class="text-xs text-slate-500">Kelola data siswa secara satuan atau gunakan Import/Export Excel untuk pembaruan massal.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="exportSiswaExcel()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-download"></i>
+                <span>Export Data Siswa (.xlsx)</span>
+              </button>
+              <button type="button" onclick="openModal('modal-excel-siswa')" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-emerald-950 text-xs font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-file-import"></i>
+                <span>Import dari Excel</span>
+              </button>
+            </div>
+          </div>
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -999,6 +1021,108 @@
           <button type="submit" class="px-5 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-sm font-bold">Simpan Siswa</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2B: IMPORT / EXPORT EXCEL DATA SISWA -->
+  <div id="modal-excel-siswa" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-file-excel text-amber-300 text-lg"></i>
+          <h3 class="font-bold text-base">Import & Export Data Excel Siswa</h3>
+        </div>
+        <button type="button" onclick="closeModal('modal-excel-siswa')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="p-6 space-y-5 max-h-[82vh] overflow-y-auto">
+        <!-- Bagian Export & Template -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 text-emerald-900 font-bold text-sm mb-1">
+                <i class="fa-solid fa-file-export text-emerald-700"></i>
+                <span>Export Data Siswa Saat Ini</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Unduh seluruh master data siswa beserta rekap status SPP & tunggakan ke dalam file Microsoft Excel (.xlsx).
+              </p>
+            </div>
+            <button type="button" onclick="exportSiswaExcel()" class="mt-3 w-full py-2.5 px-4 rounded-xl bg-madrasah-700 hover:bg-madrasah-800 text-white text-xs font-bold flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-download"></i>
+              <span>Download Excel Data Siswa (.xlsx)</span>
+            </button>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 text-amber-950 font-bold text-sm mb-1">
+                <i class="fa-solid fa-file-arrow-down text-amber-600"></i>
+                <span>Unduh Format Template Import</span>
+              </div>
+              <p class="text-xs text-slate-600 leading-relaxed">
+                Gunakan file template Excel standar agar kolom NIS, Nama, Kelas, Wali, Status, dan Tarif SPP sesuai format sistem.
+              </p>
+            </div>
+            <button type="button" onclick="downloadTemplateSiswaExcel()" class="mt-3 w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-emerald-950 text-xs font-bold flex items-center justify-center gap-2 transition">
+              <i class="fa-solid fa-table"></i>
+              <span>Download Template Excel (.xlsx)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bagian Upload / Import Excel -->
+        <div class="border-t border-slate-200 pt-5 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h4 class="font-bold text-sm text-slate-900">Import Data Siswa dari File Excel (.xlsx / .xls / .csv)</h4>
+              <p class="text-xs text-slate-500">Pilih file Excel untuk melihat pratinjau data sebelum disimpan ke sistem & Google Sheets.</p>
+            </div>
+            <select id="import-excel-mode" class="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold bg-white">
+              <option value="skip">Lewati jika NIS sudah ada</option>
+              <option value="update">Perbarui data jika NIS sudah ada</option>
+            </select>
+          </div>
+
+          <label class="block border-2 border-dashed border-emerald-300 hover:border-madrasah-600 bg-emerald-50/30 hover:bg-emerald-50/70 rounded-2xl p-5 text-center cursor-pointer transition">
+            <input type="file" id="input-import-excel-siswa" accept=".xlsx, .xls, .csv" onchange="handlePreviewImportExcel(event)" class="hidden" />
+            <i class="fa-solid fa-cloud-arrow-up text-3xl text-madrasah-600 mb-2"></i>
+            <p class="text-sm font-bold text-slate-800" id="import-excel-filename">Klik untuk memilih file Excel (.xlsx / .xls / .csv)</p>
+            <p class="text-[11px] text-slate-500 mt-1">Kolom wajib: <strong>NIS</strong>, <strong>Nama</strong>, <strong>Kelas</strong>, <strong>Wali</strong>, <strong>Status</strong>, <strong>Tarif</strong></p>
+          </label>
+
+          <!-- Preview Tabel Hasil Parse Excel -->
+          <div id="import-excel-preview-wrap" class="hidden space-y-3">
+            <div class="flex items-center justify-between bg-slate-100 px-3.5 py-2 rounded-xl text-xs">
+              <span class="font-bold text-slate-800">Pratinjau Data Terbaca: <strong id="import-excel-count" class="text-madrasah-700">0</strong> siswa valid</span>
+              <button type="button" onclick="clearExcelPreview()" class="text-rose-600 font-semibold hover:underline">Bersihkan</button>
+            </div>
+            <div class="max-h-52 overflow-auto border border-slate-200 rounded-xl">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 border-b border-slate-200">
+                  <tr>
+                    <th class="py-2 px-3">NIS</th>
+                    <th class="py-2 px-3">Nama Lengkap</th>
+                    <th class="py-2 px-3">Kelas</th>
+                    <th class="py-2 px-3">Wali Murid</th>
+                    <th class="py-2 px-3">Status</th>
+                    <th class="py-2 px-3 text-right">Tarif/Bln</th>
+                    <th class="py-2 px-3 text-center">Keterangan</th>
+                  </tr>
+                </thead>
+                <tbody id="import-excel-preview-tbody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-excel-siswa')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold hover:bg-slate-50">Tutup</button>
+          <button type="button" id="btn-execute-import-excel" onclick="executeImportExcelSiswa()" disabled class="px-5 py-2.5 rounded-xl bg-madrasah-600 disabled:bg-slate-300 disabled:cursor-not-allowed hover:bg-madrasah-700 text-white text-sm font-bold shadow-sm transition">
+            <i class="fa-solid fa-check mr-1.5"></i>Proses & Simpan Data Import
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1492,7 +1616,6 @@
 
     let appState = loadLocalCache();
 
-    // Cek apakah URL Web App valid (bukan placeholder)
     function isAppsScriptAvailable() {
       return Boolean(
         APPS_SCRIPT_URL &&
@@ -1533,7 +1656,6 @@
       }
     }
 
-    // Pemanggilan API ke Google Apps Script Web App menggunakan fetch()
     async function callServer(funcName, ...args) {
       if (!isAppsScriptAvailable()) {
         return { ok: true, localOnly: true };
@@ -1655,7 +1777,7 @@
 
       const titles = {
         dashboard: [`Dashboard Keuangan ${appState.settings.namaSingkat}`, `${appState.settings.namaMadrasah} • Ikhtisar real-time arus kas, realisasi SPP siswa, dan serapan anggaran.`],
-        spp: [`Administrasi SPP & Syahriah — ${appState.settings.namaSingkat}`, 'Kontrol kartu pembayaran bulanan, cetak kwitansi resmi, dan rekap tunggakan siswa.'],
+        spp: [`Administrasi SPP & Syahriah — ${appState.settings.namaSingkat}`, 'Kontrol kartu pembayaran bulanan, import/export Excel siswa, cetak kwitansi, dan rekap tunggakan.'],
         bku: [`Buku Kas Umum (BKU) — ${appState.settings.namaSingkat}`, 'Pencatatan kronologis penerimaan dan pengeluaran kas madrasah dengan saldo berjalan.'],
         rkam: [`RKAM & Anggaran Belanja — ${appState.settings.namaSingkat}`, 'Monitoring pagu anggaran tahunan vs realisasi pengeluaran per pos kegiatan.'],
         pajak: [`Buku Pembantu Pajak & Kas Bank — ${appState.settings.namaSingkat}`, 'Pemungutan/penyetoran pajak belanja madrasah serta rekonsiliasi brankas & bank.'],
@@ -1698,6 +1820,7 @@
 
       if (id === 'modal-bayar-spp') populateFormBayarSPP();
       if (id === 'modal-kwitansi-spp') populateKwitansiSPPModal();
+      if (id === 'modal-excel-siswa') clearExcelPreview();
       if (id === 'modal-transaksi-bku') populateFormBKU();
       if (id === 'modal-tambah-pajak') {
         const tglInput = document.getElementById('pajak-new-tanggal');
@@ -1744,6 +1867,370 @@
       modal.classList.remove('flex');
     }
 
+    // =========================================================================
+    // FITUR IMPORT & EXPORT EXCEL DATA SISWA
+    // =========================================================================
+    let parsedExcelStudents = [];
+
+    function exportSiswaExcel() {
+      try {
+        if (typeof XLSX === 'undefined') {
+          showToast('Library Excel belum termuat. Periksa koneksi internet Anda.', 'error');
+          return;
+        }
+
+        const dataRows = appState.students.map((s, idx) => {
+          const lunasBulan = BULAN_TA.filter(b => s.payments && s.payments[b.key]).map(b => b.short);
+          const tunggakBulan = BULAN_TA.filter(b => b.jatuhTempo && (!s.payments || !s.payments[b.key]));
+          const totalTunggakan = s.tarif > 0 ? tunggakBulan.length * s.tarif : 0;
+
+          return {
+            'No': idx + 1,
+            'NIS': s.nis,
+            'Nama Lengkap Siswa': s.nama,
+            'Kelas': s.kelas,
+            'Nama Wali Murid': s.wali,
+            'Status Biaya': s.status,
+            'Tarif SPP Bulanan': Number(s.tarif) || 0,
+            'Bulan Lunas': lunasBulan.length > 0 ? lunasBulan.join(', ') : '-',
+            'Jumlah Bulan Menunggak': s.tarif > 0 ? tunggakBulan.length : 0,
+            'Total Tunggakan (Rp)': totalTunggakan
+          };
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(dataRows);
+        worksheet['!cols'] = [
+          { wch: 5 },
+          { wch: 14 },
+          { wch: 32 },
+          { wch: 10 },
+          { wch: 26 },
+          { wch: 18 },
+          { wch: 18 },
+          { wch: 24 },
+          { wch: 22 },
+          { wch: 20 }
+        ];
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Siswa SPP');
+        const fileName = `Data_Siswa_SPP_${(appState.settings.namaSingkat || 'MA_NW_SUELA').replace(/\s+/g, '_')}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+        showToast('File Excel data siswa berhasil diekspor!');
+      } catch (err) {
+        showToast('Gagal mengekspor Excel: ' + err.message, 'error');
+      }
+    }
+
+    function exportTunggakanExcel() {
+      try {
+        if (typeof XLSX === 'undefined') {
+          exportTunggakanCSV();
+          return;
+        }
+
+        const rows = [];
+        appState.students.forEach((s, idx) => {
+          const listBulan = BULAN_TA.filter(b => b.jatuhTempo && (!s.payments || !s.payments[b.key]));
+          if (listBulan.length > 0 && s.tarif > 0) {
+            rows.push({
+              'No': rows.length + 1,
+              'NIS': s.nis,
+              'Nama Siswa': s.nama,
+              'Kelas': s.kelas,
+              'Wali Murid': s.wali,
+              'Bulan Menunggak': listBulan.map(b => b.label).join(', '),
+              'Jumlah Bulan': listBulan.length,
+              'Tarif/Bulan (Rp)': s.tarif,
+              'Total Tunggakan (Rp)': listBulan.length * s.tarif
+            });
+          }
+        });
+
+        if (rows.length === 0) {
+          showToast('Tidak ada data tunggakan siswa untuk diekspor.', 'warning');
+          return;
+        }
+
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws['!cols'] = [
+          { wch: 5 }, { wch: 14 }, { wch: 30 }, { wch: 10 },
+          { wch: 25 }, { wch: 32 }, { wch: 14 }, { wch: 16 }, { wch: 20 }
+        ];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Rekap Tunggakan SPP');
+        XLSX.writeFile(wb, `Rekap_Tunggakan_SPP_${(appState.settings.namaSingkat || 'MA_NW_SUELA').replace(/\s+/g, '_')}.xlsx`);
+        showToast('File Excel Rekap Tunggakan SPP berhasil diunduh.');
+      } catch (err) {
+        showToast('Gagal mengekspor tunggakan: ' + err.message, 'error');
+      }
+    }
+
+    function downloadTemplateSiswaExcel() {
+      try {
+        if (typeof XLSX === 'undefined') {
+          showToast('Library Excel belum termuat.', 'error');
+          return;
+        }
+
+        const templateRows = [
+          {
+            'NIS': '2627101',
+            'Nama': 'Ahmad Fauzan Al-Ghifari',
+            'Kelas': 'X-A',
+            'Wali': 'Bapak H. Abdul Majid',
+            'Status': 'Reguler',
+            'Tarif': 150000
+          },
+          {
+            'NIS': '2627102',
+            'Nama': 'Siti Rahmawati Putri',
+            'Kelas': 'X-B',
+            'Wali': 'Ibu Hj. Aminah',
+            'Status': 'Keringanan 50%',
+            'Tarif': 75000
+          },
+          {
+            'NIS': '2627103',
+            'Nama': 'Muhammad Rizki Pratama',
+            'Kelas': 'XI-A',
+            'Wali': 'Ibu Fatimah',
+            'Status': 'Beasiswa Yatim',
+            'Tarif': 0
+          }
+        ];
+
+        const ws = XLSX.utils.json_to_sheet(templateRows);
+        ws['!cols'] = [
+          { wch: 15 },
+          { wch: 32 },
+          { wch: 12 },
+          { wch: 26 },
+          { wch: 20 },
+          { wch: 16 }
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Template_Siswa');
+        XLSX.writeFile(wb, 'Template_Import_Data_Siswa_MA_NW_SUELA.xlsx');
+        showToast('Template Excel siswa berhasil diunduh.');
+      } catch (err) {
+        showToast('Gagal membuat template Excel: ' + err.message, 'error');
+      }
+    }
+
+    function clearExcelPreview() {
+      parsedExcelStudents = [];
+      const fileInput = document.getElementById('input-import-excel-siswa');
+      const fileLabel = document.getElementById('import-excel-filename');
+      const previewWrap = document.getElementById('import-excel-preview-wrap');
+      const btnSubmit = document.getElementById('btn-execute-import-excel');
+
+      if (fileInput) fileInput.value = '';
+      if (fileLabel) fileLabel.textContent = 'Klik untuk memilih file Excel (.xlsx / .xls / .csv)';
+      if (previewWrap) previewWrap.classList.add('hidden');
+      if (btnSubmit) btnSubmit.disabled = true;
+    }
+
+    function normalizeImportedStudentRow(rawRow) {
+      const normalizedKeys = {};
+      Object.keys(rawRow).forEach(k => {
+        normalizedKeys[String(k).trim().toLowerCase()] = rawRow[k];
+      });
+
+      const nis = String(
+        normalizedKeys['nis'] ??
+        normalizedKeys['nis / nisn'] ??
+        normalizedKeys['nisn'] ??
+        ''
+      ).trim();
+
+      const nama = String(
+        normalizedKeys['nama'] ??
+        normalizedKeys['nama lengkap'] ??
+        normalizedKeys['nama lengkap siswa'] ??
+        normalizedKeys['nama siswa'] ??
+        ''
+      ).trim();
+
+      const kelas = String(
+        normalizedKeys['kelas'] ?? 'X-A'
+      ).trim() || 'X-A';
+
+      const wali = String(
+        normalizedKeys['wali'] ??
+        normalizedKeys['nama wali'] ??
+        normalizedKeys['nama wali murid'] ??
+        normalizedKeys['orang tua'] ??
+        '-'
+      ).trim() || '-';
+
+      let statusRaw = String(
+        normalizedKeys['status'] ??
+        normalizedKeys['status biaya'] ??
+        normalizedKeys['status keringanan'] ??
+        'Reguler'
+      ).trim();
+
+      let status = 'Reguler';
+      if (/yatim|beasiswa/i.test(statusRaw)) status = 'Beasiswa Yatim';
+      else if (/50|keringanan/i.test(statusRaw)) status = 'Keringanan 50%';
+
+      let tarifRaw = normalizedKeys['tarif'] ?? normalizedKeys['tarif spp'] ?? normalizedKeys['tarif spp bulanan'];
+      let tarif = 150000;
+      if (tarifRaw !== undefined && tarifRaw !== null && String(tarifRaw).trim() !== '') {
+        const cleanedNum = Number(String(tarifRaw).replace(/[^0-9.-]/g, ''));
+        tarif = isNaN(cleanedNum) ? 150000 : Math.max(0, cleanedNum);
+      } else {
+        if (status === 'Beasiswa Yatim') tarif = 0;
+        else if (status === 'Keringanan 50%') tarif = 75000;
+      }
+
+      if (!nis || !nama) return null;
+
+      return { nis, nama, kelas, wali, status, tarif };
+    }
+
+    function handlePreviewImportExcel(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      if (typeof XLSX === 'undefined') {
+        showToast('Library pembaca Excel belum termuat.', 'error');
+        return;
+      }
+
+      document.getElementById('import-excel-filename').textContent = `File terpilih: ${file.name}`;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonRows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+
+          const validList = [];
+          jsonRows.forEach(row => {
+            const parsed = normalizeImportedStudentRow(row);
+            if (parsed) validList.push(parsed);
+          });
+
+          if (validList.length === 0) {
+            showToast('Tidak ditemukan baris siswa valid (pastikan ada kolom NIS & Nama).', 'warning');
+            clearExcelPreview();
+            return;
+          }
+
+          parsedExcelStudents = validList;
+          renderExcelImportPreview();
+        } catch (err) {
+          showToast('Gagal membaca file Excel: ' + err.message, 'error');
+          clearExcelPreview();
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function renderExcelImportPreview() {
+      const wrap = document.getElementById('import-excel-preview-wrap');
+      const tbody = document.getElementById('import-excel-preview-tbody');
+      const countEl = document.getElementById('import-excel-count');
+      const btnSubmit = document.getElementById('btn-execute-import-excel');
+
+      const existingNisSet = new Set(appState.students.map(s => String(s.nis).trim()));
+
+      tbody.innerHTML = parsedExcelStudents.map(item => {
+        const isExist = existingNisSet.has(item.nis);
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-2 px-3 font-mono text-slate-600">${item.nis}</td>
+            <td class="py-2 px-3 font-bold text-slate-900">${item.nama}</td>
+            <td class="py-2 px-3 font-semibold text-madrasah-700">${item.kelas}</td>
+            <td class="py-2 px-3 text-slate-600">${item.wali}</td>
+            <td class="py-2 px-3">${item.status}</td>
+            <td class="py-2 px-3 text-right font-bold">${formatRupiah(item.tarif)}</td>
+            <td class="py-2 px-3 text-center">
+              ${isExist
+                ? '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">NIS Sudah Ada</span>'
+                : '<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Siswa Baru</span>'
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      countEl.textContent = parsedExcelStudents.length;
+      wrap.classList.remove('hidden');
+      btnSubmit.disabled = false;
+    }
+
+    async function executeImportExcelSiswa() {
+      if (parsedExcelStudents.length === 0) return;
+
+      const mode = document.getElementById('import-excel-mode').value;
+      let addedCount = 0;
+      let updatedCount = 0;
+      let skippedCount = 0;
+
+      setSyncOverlay(true, `Mengimpor ${parsedExcelStudents.length} data siswa...`);
+      try {
+        for (let i = 0; i < parsedExcelStudents.length; i++) {
+          const item = parsedExcelStudents[i];
+          const existingIdx = appState.students.findIndex(s => String(s.nis).trim() === item.nis);
+
+          if (existingIdx !== -1) {
+            if (mode === 'update') {
+              appState.students[existingIdx] = {
+                ...appState.students[existingIdx],
+                nama: item.nama,
+                kelas: item.kelas,
+                wali: item.wali,
+                status: item.status,
+                tarif: item.tarif
+              };
+              updatedCount++;
+            } else {
+              skippedCount++;
+            }
+          } else {
+            const newStudent = {
+              id: 'S' + Date.now() + '_' + i,
+              nis: item.nis,
+              nama: item.nama,
+              kelas: item.kelas,
+              wali: item.wali,
+              status: item.status,
+              tarif: item.tarif,
+              payments: {}
+            };
+
+            if (isAppsScriptAvailable()) {
+              await callServer('addStudent', newStudent);
+            }
+            appState.students.push(newStudent);
+            addedCount++;
+          }
+        }
+
+        saveLocalCache(appState);
+        closeModal('modal-excel-siswa');
+        clearExcelPreview();
+        refreshAllViews();
+        switchSppSubtab('siswa');
+
+        showToast(`Import selesai: ${addedCount} ditambahkan, ${updatedCount} diperbarui, ${skippedCount} dilewati.`);
+      } catch (err) {
+        showToast('Terjadi kendala saat import: ' + err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    // =========================================================================
+    // RENDER DASHBOARD & KOMPONEN LAINNYA
+    // =========================================================================
     function renderDashboard() {
       let totalMasuk = 0;
       let totalKeluar = 0;
