@@ -1,0 +1,3132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MA NW SUELA — Sistem Administrasi Bendahara Madrasah Aliyah Nahdlatul Wathan Suela</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Plus Jakarta Sans & Amiri -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            arabic: ['"Amiri"', 'serif'],
+          },
+          colors: {
+            madrasah: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              300: '#6ee7b7',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b',
+              950: '#022c22',
+            },
+            gold: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .islamic-pattern {
+      background-color: #064e3b;
+      background-image: radial-gradient(rgba(251, 191, 36, 0.12) 1px, transparent 1px),
+                        radial-gradient(rgba(16, 185, 129, 0.15) 1px, #064e3b 1px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #059669;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-madrasah-600 selection:text-white">
+
+  <!-- Indikator Sinkronisasi Google Sheets -->
+  <div id="sync-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-2xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white px-5 py-4 rounded-2xl shadow-xl border border-slate-200 flex items-center gap-3 text-sm font-bold text-slate-800">
+      <i class="fa-solid fa-circle-notch fa-spin text-madrasah-600 text-lg"></i>
+      <span id="sync-status-text">Menyinkronkan data dengan Google Sheets...</span>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- Layout Utama -->
+  <div class="min-h-screen flex flex-col lg:flex-row">
+
+    <!-- Mobile Header -->
+    <header class="lg:hidden islamic-pattern text-white px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-md">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-emerald-950/80 border border-amber-400/50 p-1 flex items-center justify-center overflow-hidden shrink-0">
+          <img id="mobile-header-logo" src="" alt="Logo MA NW SUELA" class="w-full h-full object-contain" />
+        </div>
+        <div>
+          <h1 class="font-extrabold text-base leading-tight tracking-wide text-amber-300">MA NW SUELA</h1>
+          <p class="text-[11px] text-emerald-100 leading-tight">Madrasah Aliyah Nahdlatul Wathan Suela</p>
+        </div>
+      </div>
+      <button type="button" onclick="toggleSidebar()" class="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+    </header>
+
+    <!-- Backdrop Mobile Sidebar -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-30 hidden lg:hidden"></div>
+
+    <!-- Sidebar Navigasi -->
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 z-40 h-screen w-72 islamic-pattern text-white flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 shadow-2xl shrink-0">
+      <div>
+        <div class="p-5 border-b border-emerald-800/80">
+          <div class="flex items-center gap-3.5">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-950/90 border border-amber-400/60 p-1 flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0 overflow-hidden">
+              <img id="sidebar-logo-img" src="" alt="Logo MA NW SUELA" class="w-full h-full object-contain" />
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-amber-300 block">Sistem Bendahara</span>
+              <h1 class="font-extrabold text-lg tracking-tight text-white leading-tight" id="sidebar-madrasah-short">MA NW SUELA</h1>
+              <p class="text-[11px] text-emerald-200 leading-snug line-clamp-2" id="sidebar-madrasah-name">Madrasah Aliyah Nahdlatul Wathan Suela</p>
+            </div>
+          </div>
+          <div class="mt-4 px-3 py-2 rounded-xl bg-emerald-950/60 border border-emerald-700/50 flex items-center justify-between text-xs">
+            <span class="text-emerald-300">Tahun Ajaran</span>
+            <span class="font-bold text-amber-300" id="sidebar-ta">2026 / 2027</span>
+          </div>
+        </div>
+
+        <nav class="p-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-240px)]">
+          <button type="button" onclick="switchTab('dashboard')" data-tab="dashboard" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all bg-emerald-700/90 text-white shadow-md shadow-emerald-950/40">
+            <i class="fa-solid fa-chart-pie w-5 text-center text-amber-300"></i>
+            <span>Dashboard Keuangan</span>
+          </button>
+
+          <button type="button" onclick="switchTab('spp')" data-tab="spp" class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-emerald-100 hover:bg-emerald-800/70 transition-all">
+            <div class="flex items-center gap-3.5">
+              <i class="fa-solid fa-graduation-cap w-5 text-center text-emerald-300"></i>
+              <span>SPP & Syahriah Siswa</span>
+            </div>
+            <span id="badge-tunggakan" class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-400 text-emerald-950">0</span>
+          </button>
+
+          <button type="button" onclick="switchTab('bku')" data-tab="bku" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-emerald-100 hover:bg-emerald-800/70 transition-all">
+            <i class="fa-solid fa-book-open w-5 text-center text-emerald-300"></i>
+            <span>Buku Kas Umum (BKU)</span>
+          </button>
+
+          <button type="button" onclick="switchTab('rkam')" data-tab="rkam" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-emerald-100 hover:bg-emerald-800/70 transition-all">
+            <i class="fa-solid fa-scale-balanced w-5 text-center text-emerald-300"></i>
+            <span>RKAM & Anggaran</span>
+          </button>
+
+          <button type="button" onclick="switchTab('pajak')" data-tab="pajak" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-emerald-100 hover:bg-emerald-800/70 transition-all">
+            <i class="fa-solid fa-landmark w-5 text-center text-emerald-300"></i>
+            <span>Buku Pajak & Kas Bank</span>
+          </button>
+
+          <button type="button" onclick="switchTab('lpj')" data-tab="lpj" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-emerald-100 hover:bg-emerald-800/70 transition-all">
+            <i class="fa-solid fa-file-signature w-5 text-center text-emerald-300"></i>
+            <span>Laporan LPJ & Cetak</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-4 border-t border-emerald-800/80 space-y-2 bg-emerald-950/40">
+        <button type="button" onclick="syncFromGoogleSheets(true)" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-emerald-200 hover:bg-emerald-800/70 transition">
+          <i class="fa-solid fa-cloud-arrow-down text-emerald-300"></i>
+          <span>Muat Ulang dari Sheets</span>
+        </button>
+        <button type="button" onclick="openModal('modal-pengaturan')" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-emerald-200 hover:bg-emerald-800/70 transition">
+          <i class="fa-solid fa-gear text-amber-300"></i>
+          <span>Identitas & Logo Madrasah</span>
+        </button>
+        <button type="button" onclick="openModal('modal-reset')" class="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-rose-200 hover:bg-rose-950/60 transition">
+          <i class="fa-solid fa-rotate-left text-rose-400"></i>
+          <span>Reset Data Demo Awal</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Konten Utama -->
+    <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+
+      <!-- Top Bar Info & Aksi Cepat -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 text-xs font-semibold text-madrasah-700 mb-1">
+            <span class="font-arabic text-base text-madrasah-800">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</span>
+            <span>•</span>
+            <span class="font-bold text-madrasah-800">MA NW SUELA</span>
+            <span>•</span>
+            <span id="current-date-display">Selasa, 24 November 2026</span>
+            <span id="db-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Menghubungkan...</span>
+          </div>
+          <h2 id="page-title" class="text-xl sm:text-2xl font-extrabold text-slate-900">Dashboard Keuangan MA NW SUELA</h2>
+          <p id="page-subtitle" class="text-xs sm:text-sm text-slate-500">Madrasah Aliyah Nahdlatul Wathan Suela • Ikhtisar arus kas, realisasi SPP siswa, dan anggaran.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button type="button" onclick="openModal('modal-bayar-spp')" class="px-4 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-xs sm:text-sm font-semibold shadow-sm shadow-madrasah-600/20 flex items-center gap-2 transition">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            <span>Terima SPP</span>
+          </button>
+          <button type="button" onclick="openModal('modal-transaksi-bku')" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-emerald-950 text-xs sm:text-sm font-bold shadow-sm flex items-center gap-2 transition">
+            <i class="fa-solid fa-plus-circle"></i>
+            <span>Catat Kas (BKU)</span>
+          </button>
+          <button type="button" onclick="printCurrentMenu()" class="px-3.5 py-2.5 rounded-xl border border-madrasah-700 bg-madrasah-50 hover:bg-madrasah-100 text-madrasah-900 text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+            <i class="fa-solid fa-print"></i>
+            <span>Cetak Menu</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB 1: DASHBOARD -->
+      <section id="tab-dashboard" class="tab-content space-y-6">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-sm sm:text-base text-slate-900">Ringkasan Eksekutif Keuangan Madrasah</h3>
+            <p class="text-xs text-slate-500">Ikhtisar kas, kepatuhan SPP, arus kas bulanan, dan mutasi BKU terakhir MA NW SUELA.</p>
+          </div>
+          <button type="button" onclick="printMenuReport('dashboard')" class="px-4 py-2 rounded-xl bg-madrasah-700 hover:bg-madrasah-800 text-white text-xs font-bold flex items-center gap-2 self-start sm:self-auto transition">
+            <i class="fa-solid fa-print"></i>
+            <span>Cetak Ringkasan Dashboard</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Pemasukan</span>
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i class="fa-solid fa-arrow-trend-up text-lg"></i>
+              </div>
+            </div>
+            <h3 id="dash-total-masuk" class="text-xl sm:text-2xl font-extrabold text-slate-900">Rp 0</h3>
+            <p class="text-xs text-emerald-600 font-medium mt-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>BOS, SPP/Syahriah & Infaq</span>
+            </p>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Pengeluaran</span>
+              <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                <i class="fa-solid fa-arrow-trend-down text-lg"></i>
+              </div>
+            </div>
+            <h3 id="dash-total-keluar" class="text-xl sm:text-2xl font-extrabold text-slate-900">Rp 0</h3>
+            <p class="text-xs text-slate-500 font-medium mt-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-receipt text-rose-500"></i>
+              <span>Belanja Operasional & Honor</span>
+            </p>
+          </div>
+
+          <div class="bg-gradient-to-br from-madrasah-800 to-madrasah-950 text-white p-5 rounded-2xl shadow-lg shadow-madrasah-900/20">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-emerald-200">Saldo Kas & Bank</span>
+              <div class="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center">
+                <i class="fa-solid fa-vault text-lg"></i>
+              </div>
+            </div>
+            <h3 id="dash-saldo-akhir" class="text-xl sm:text-2xl font-extrabold text-white">Rp 0</h3>
+            <div class="mt-2 pt-2 border-t border-emerald-700/60 flex items-center justify-between text-[11px] text-emerald-200">
+              <span>Tunai: <strong id="dash-kas-tunai" class="text-white">Rp 0</strong></span>
+              <span>Bank: <strong id="dash-kas-bank" class="text-amber-300">Rp 0</strong></span>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Kepatuhan SPP</span>
+              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i class="fa-solid fa-users-viewfinder text-lg"></i>
+              </div>
+            </div>
+            <div class="flex items-baseline justify-between">
+              <h3 id="dash-spp-persen" class="text-xl sm:text-2xl font-extrabold text-slate-900">0%</h3>
+              <span id="dash-spp-bulan-label" class="text-xs font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700">Nov 2026</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full mt-3 overflow-hidden">
+              <div id="dash-spp-bar" class="bg-madrasah-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p id="dash-spp-detail" class="text-[11px] text-slate-500 mt-1.5">0 dari 0 siswa lunas bulan ini</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+              <div>
+                <h3 class="font-bold text-base text-slate-900">Arus Kas Bulanan (Tahun Ajaran 2026/2027)</h3>
+                <p class="text-xs text-slate-500">Perbandingan realisasi pemasukan dan pengeluaran per bulan</p>
+              </div>
+              <div class="flex items-center gap-4 text-xs font-semibold">
+                <span class="flex items-center gap-1.5 text-slate-600">
+                  <span class="w-3 h-3 rounded-sm bg-madrasah-600 inline-block"></span> Pemasukan
+                </span>
+                <span class="flex items-center gap-1.5 text-slate-600">
+                  <span class="w-3 h-3 rounded-sm bg-amber-400 inline-block"></span> Pengeluaran
+                </span>
+              </div>
+            </div>
+            <div id="dashboard-chart-container" class="h-64 flex items-end justify-between gap-2 sm:gap-3 pt-6 pb-2 px-2 border-b border-slate-200 overflow-x-auto"></div>
+          </div>
+
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-base text-slate-900 mb-1">Komposisi Pemasukan</h3>
+              <p class="text-xs text-slate-500 mb-5">Berdasarkan pos sumber dana madrasah</p>
+              <div id="komposisi-dana-list" class="space-y-4"></div>
+            </div>
+            <div class="mt-6 p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200/70">
+              <div class="flex items-start gap-2.5">
+                <i class="fa-solid fa-circle-info text-madrasah-700 mt-0.5"></i>
+                <p class="text-xs text-emerald-900 leading-relaxed">
+                  <strong>Catatan Bendahara:</strong> Seluruh data tersimpan otomatis di Google Sheets MA NW SUELA.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-base text-slate-900">5 Transaksi Buku Kas Umum Terbaru</h3>
+              <p class="text-xs text-slate-500">Mutasi penerimaan dan pengeluaran terakhir yang tercatat</p>
+            </div>
+            <button type="button" onclick="switchTab('bku')" class="text-xs font-bold text-madrasah-700 hover:text-madrasah-800 flex items-center gap-1">
+              <span>Lihat Semua BKU</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                  <th class="py-3 px-4 font-bold">Tanggal & No. Bukti</th>
+                  <th class="py-3 px-4 font-bold">Uraian Transaksi</th>
+                  <th class="py-3 px-4 font-bold">Sumber Dana</th>
+                  <th class="py-3 px-4 font-bold text-right">Nominal</th>
+                </tr>
+              </thead>
+              <tbody id="dash-recent-bku" class="divide-y divide-slate-100 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: SPP & SYAHRIAH SISWA -->
+      <section id="tab-spp" class="tab-content hidden space-y-6">
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="switchSppSubtab('matriks')" id="subbtn-matriks" class="spp-subbtn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-madrasah-700 text-white transition">
+              <i class="fa-solid fa-table-cells mr-1.5"></i>Kartu SPP Bulanan
+            </button>
+            <button type="button" onclick="switchSppSubtab('tunggakan')" id="subbtn-tunggakan" class="spp-subbtn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+              <i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-500"></i>Rekap Tunggakan
+            </button>
+            <button type="button" onclick="switchSppSubtab('siswa')" id="subbtn-siswa" class="spp-subbtn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+              <i class="fa-solid fa-user-graduate mr-1.5 text-madrasah-600"></i>Master Data Siswa
+            </button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="openModal('modal-kwitansi-spp')" class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-emerald-950 text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-2xs transition">
+              <i class="fa-solid fa-receipt"></i>
+              <span>Cetak Kwitansi SPP / Tunggakan</span>
+            </button>
+            <button type="button" onclick="printMenuReport('spp')" class="px-3.5 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-print text-madrasah-700"></i>
+              <span>Cetak Rekap SPP</span>
+            </button>
+            <button type="button" onclick="openModal('modal-tambah-siswa')" class="px-3.5 py-2 rounded-xl border border-madrasah-600 text-madrasah-700 hover:bg-madrasah-50 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Tambah Siswa</span>
+            </button>
+            <button type="button" onclick="openModal('modal-bayar-spp')" class="px-4 py-2 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs transition">
+              <i class="fa-solid fa-money-bill-wave"></i>
+              <span>Input Pembayaran SPP</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" id="filter-spp-search" oninput="renderSppViews()" placeholder="Cari Nama Siswa atau NIS..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-madrasah-500" />
+          </div>
+          <div>
+            <select id="filter-spp-kelas" onchange="renderSppViews()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-madrasah-500 bg-white">
+              <option value="ALL">Semua Kelas (X - XII)</option>
+              <option value="X-A">Kelas X-A</option>
+              <option value="X-B">Kelas X-B</option>
+              <option value="XI-A">Kelas XI-A</option>
+              <option value="XI-B">Kelas XI-B</option>
+              <option value="XII-A">Kelas XII-A</option>
+              <option value="XII-B">Kelas XII-B</option>
+            </select>
+          </div>
+          <div>
+            <select id="filter-spp-status" onchange="renderSppViews()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-madrasah-500 bg-white">
+              <option value="ALL">Semua Status Keringanan</option>
+              <option value="Reguler">Reguler (Tarif Penuh)</option>
+              <option value="Beasiswa Yatim">Beasiswa Yatim (Gratis 100%)</option>
+              <option value="Keringanan 50%">Keringanan 50% (Tahfidz/Kurang Mampu)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="spp-view-matriks" class="spp-subview bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div class="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 class="font-bold text-base text-slate-900">Matriks Kartu Kontrol SPP (Juli 2026 – Juni 2027)</h3>
+              <p class="text-xs text-slate-500">Klik kotak hijau untuk kwitansi, atau kotak merah/kosong untuk melunasi.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-[11px] font-semibold">
+              <span class="flex items-center gap-1 text-emerald-700"><span class="w-3 h-3 rounded bg-emerald-500 inline-block"></span> Lunas</span>
+              <span class="flex items-center gap-1 text-rose-700"><span class="w-3 h-3 rounded bg-rose-100 border border-rose-300 inline-block"></span> Menunggak (≤ Nov)</span>
+              <span class="flex items-center gap-1 text-slate-500"><span class="w-3 h-3 rounded bg-slate-100 border border-slate-300 inline-block"></span> Belum Jatuh Tempo</span>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[980px]">
+              <thead>
+                <tr class="bg-madrasah-900 text-white text-[11px] uppercase tracking-wider">
+                  <th class="py-3 px-3 font-bold sticky left-0 bg-madrasah-900 z-10">Siswa & Kelas</th>
+                  <th class="py-3 px-2 font-bold text-right">Tarif/Bln</th>
+                  <th class="py-3 px-1.5 text-center">Jul</th>
+                  <th class="py-3 px-1.5 text-center">Agu</th>
+                  <th class="py-3 px-1.5 text-center">Sep</th>
+                  <th class="py-3 px-1.5 text-center">Okt</th>
+                  <th class="py-3 px-1.5 text-center bg-amber-500/20 text-amber-200">Nov</th>
+                  <th class="py-3 px-1.5 text-center">Des</th>
+                  <th class="py-3 px-1.5 text-center">Jan</th>
+                  <th class="py-3 px-1.5 text-center">Feb</th>
+                  <th class="py-3 px-1.5 text-center">Mar</th>
+                  <th class="py-3 px-1.5 text-center">Apr</th>
+                  <th class="py-3 px-1.5 text-center">Mei</th>
+                  <th class="py-3 px-1.5 text-center">Jun</th>
+                  <th class="py-3 px-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="spp-matriks-tbody" class="divide-y divide-slate-100 text-xs"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="spp-view-tunggakan" class="spp-subview hidden space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-rose-50 border border-rose-200 p-4 rounded-2xl">
+              <span class="text-xs font-bold text-rose-700 uppercase">Total Piutang / Tunggakan SPP</span>
+              <h4 id="rekap-total-tunggakan" class="text-2xl font-extrabold text-rose-900 mt-1">Rp 0</h4>
+              <p class="text-xs text-rose-600 mt-1">Akumulasi bulan Juli – November 2026</p>
+            </div>
+            <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl">
+              <span class="text-xs font-bold text-amber-700 uppercase">Jumlah Siswa Menunggak</span>
+              <h4 id="rekap-jumlah-menunggak" class="text-2xl font-extrabold text-amber-900 mt-1">0 Siswa</h4>
+              <p class="text-xs text-amber-700 mt-1">Perlu surat pemberitahuan wali murid</p>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex flex-col justify-between">
+              <div>
+                <span class="text-xs font-bold text-emerald-700 uppercase">Cetak Rekap & Kwitansi</span>
+                <p class="text-xs text-emerald-800 mt-1">Unduh daftar tunggakan CSV atau cetak kwitansi pembayaran/tunggakan.</p>
+              </div>
+              <div class="flex flex-wrap gap-2 mt-2">
+                <button type="button" onclick="exportTunggakanCSV()" class="px-3 py-2 rounded-xl bg-madrasah-700 text-white text-xs font-bold hover:bg-madrasah-800 transition">
+                  <i class="fa-solid fa-file-excel mr-1"></i>CSV
+                </button>
+                <button type="button" onclick="openModal('modal-kwitansi-spp')" class="px-3 py-2 rounded-xl bg-amber-500 text-emerald-950 text-xs font-bold hover:bg-amber-600 transition">
+                  <i class="fa-solid fa-receipt mr-1"></i>Kwitansi Tunggakan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200">
+                    <th class="py-3.5 px-4 font-bold">NIS & Nama Siswa</th>
+                    <th class="py-3.5 px-4 font-bold">Kelas</th>
+                    <th class="py-3.5 px-4 font-bold">Bulan Menunggak (s/d Nov)</th>
+                    <th class="py-3.5 px-4 font-bold text-right">Total Tunggakan</th>
+                    <th class="py-3.5 px-4 font-bold text-center">Tindak Lanjut</th>
+                  </tr>
+                </thead>
+                <tbody id="spp-tunggakan-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="spp-view-siswa" class="spp-subview hidden bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200">
+                  <th class="py-3.5 px-4 font-bold">NIS</th>
+                  <th class="py-3.5 px-4 font-bold">Nama Lengkap Siswa</th>
+                  <th class="py-3.5 px-4 font-bold">Kelas</th>
+                  <th class="py-3.5 px-4 font-bold">Nama Wali Murid</th>
+                  <th class="py-3.5 px-4 font-bold">Status Biaya</th>
+                  <th class="py-3.5 px-4 font-bold text-right">Tarif SPP/Bln</th>
+                  <th class="py-3.5 px-4 font-bold text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="spp-master-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: BUKU KAS UMUM (BKU) -->
+      <section id="tab-bku" class="tab-content hidden space-y-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-lg text-slate-900">Buku Kas Umum (BKU) Madrasah</h3>
+              <p class="text-xs text-slate-500">Mencatat seluruh mutasi kas tunai & rekening bank secara kronologis dengan saldo berjalan otomatis.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="printMenuReport('bku')" class="px-3.5 py-2.5 rounded-xl bg-madrasah-700 hover:bg-madrasah-800 text-white text-xs font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-print"></i>
+                <span>Cetak BKU</span>
+              </button>
+              <button type="button" onclick="exportBKUCSV()" class="px-3.5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-file-csv text-madrasah-700"></i>
+                <span>Ekspor CSV</span>
+              </button>
+              <button type="button" onclick="openModal('modal-transaksi-bku')" class="px-4 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition">
+                <i class="fa-solid fa-plus"></i>
+                <span>Tambah Transaksi BKU</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Filter Bulan</label>
+              <select id="filter-bku-bulan" onchange="renderBKU()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                <option value="ALL">Semua Bulan</option>
+                <option value="2026-07">Juli 2026</option>
+                <option value="2026-08">Agustus 2026</option>
+                <option value="2026-09">September 2026</option>
+                <option value="2026-10">Oktober 2026</option>
+                <option value="2026-11">November 2026</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Sumber Dana</label>
+              <select id="filter-bku-sumber" onchange="renderBKU()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                <option value="ALL">Semua Sumber Dana</option>
+                <option value="Dana BOS">Dana BOS</option>
+                <option value="SPP & Komite">SPP & Komite</option>
+                <option value="Yayasan / Infaq">Yayasan / Infaq</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Jenis Mutasi</label>
+              <select id="filter-bku-jenis" onchange="renderBKU()" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm bg-white">
+                <option value="ALL">Semua (Debit & Kredit)</option>
+                <option value="masuk">Penerimaan (Debit)</option>
+                <option value="keluar">Pengeluaran (Kredit)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Cari Uraian / No. Bukti</label>
+              <input type="text" id="filter-bku-search" oninput="renderBKU()" placeholder="Ketik kata kunci..." class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr class="bg-madrasah-900 text-white text-[11px] uppercase tracking-wider">
+                  <th class="py-3.5 px-4 font-bold">Tanggal</th>
+                  <th class="py-3.5 px-4 font-bold">No. Bukti</th>
+                  <th class="py-3.5 px-4 font-bold">Kode Pos</th>
+                  <th class="py-3.5 px-4 font-bold">Uraian Transaksi</th>
+                  <th class="py-3.5 px-4 font-bold">Sumber & Metode</th>
+                  <th class="py-3.5 px-4 font-bold text-right">Penerimaan (Debit)</th>
+                  <th class="py-3.5 px-4 font-bold text-right">Pengeluaran (Kredit)</th>
+                  <th class="py-3.5 px-4 font-bold text-right">Saldo Berjalan</th>
+                  <th class="py-3.5 px-3 font-bold text-center">Hapus</th>
+                </tr>
+              </thead>
+              <tbody id="bku-tbody" class="divide-y divide-slate-100 text-xs sm:text-sm"></tbody>
+              <tfoot class="bg-slate-50 font-bold text-slate-900 border-t-2 border-slate-300 text-xs sm:text-sm">
+                <tr>
+                  <td colspan="5" class="py-3.5 px-4 text-right uppercase">Total Mutasi Tampil:</td>
+                  <td id="bku-foot-debit" class="py-3.5 px-4 text-right text-emerald-700">Rp 0</td>
+                  <td id="bku-foot-kredit" class="py-3.5 px-4 text-right text-rose-700">Rp 0</td>
+                  <td id="bku-foot-saldo" class="py-3.5 px-4 text-right text-madrasah-900">Rp 0</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: RKAM -->
+      <section id="tab-rkam" class="tab-content hidden space-y-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-lg text-slate-900">Rencana Kegiatan dan Anggaran Madrasah (RKAM)</h3>
+            <p class="text-xs text-slate-500">Pemantauan pagu anggaran belanja tahunan vs realisasi pengeluaran berdasarkan BKU.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+            <button type="button" onclick="printMenuReport('rkam')" class="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+              <i class="fa-solid fa-print text-madrasah-700"></i>
+              <span>Cetak RKAM</span>
+            </button>
+            <button type="button" onclick="openModal('modal-tambah-rkam')" class="px-4 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+              <i class="fa-solid fa-plus"></i>
+              <span>Tambah Pos Anggaran</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <span class="text-xs font-bold text-slate-400 uppercase">Total Pagu Belanja RKAM</span>
+            <h4 id="rkam-total-pagu" class="text-2xl font-extrabold text-slate-900 mt-1">Rp 0</h4>
+            <p class="text-xs text-slate-500 mt-1">Tahun Anggaran 2026/2027</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <span class="text-xs font-bold text-slate-400 uppercase">Total Realisasi Belanja</span>
+            <h4 id="rkam-total-realisasi" class="text-2xl font-extrabold text-madrasah-700 mt-1">Rp 0</h4>
+            <p id="rkam-persen-serapan" class="text-xs text-madrasah-600 font-semibold mt-1">Serapan: 0%</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+            <span class="text-xs font-bold text-slate-400 uppercase">Sisa Pagu Anggaran</span>
+            <h4 id="rkam-total-sisa" class="text-2xl font-extrabold text-amber-600 mt-1">Rp 0</h4>
+            <p class="text-xs text-slate-500 mt-1">Tersedia untuk kegiatan berikutnya</p>
+          </div>
+        </div>
+
+        <div id="rkam-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+      </section>
+
+      <!-- TAB 5: BUKU PAJAK & KAS BANK -->
+      <section id="tab-pajak" class="tab-content hidden space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+                <i class="fa-solid fa-money-bill-1-wave text-xl"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-slate-900">Buku Pembantu Kas Tunai (Brankas)</h3>
+                <p class="text-xs text-slate-500">Mutasi transaksi menggunakan uang tunai</p>
+              </div>
+            </div>
+            <div class="space-y-2.5 text-sm border-t border-slate-100 pt-4">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Total Penerimaan Tunai:</span>
+                <span id="kas-tunai-masuk" class="font-bold text-emerald-700">Rp 0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Total Pengeluaran Tunai:</span>
+                <span id="kas-tunai-keluar" class="font-bold text-rose-700">Rp 0</span>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-slate-200 text-base">
+                <span class="font-bold text-slate-800">Saldo Fisik Brankas:</span>
+                <span id="kas-tunai-saldo" class="font-extrabold text-madrasah-800">Rp 0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                <i class="fa-solid fa-building-columns text-xl"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-slate-900">Buku Pembantu Bank (Rekening Madrasah)</h3>
+                <p class="text-xs text-slate-500">Mutasi transfer non-tunai & pencairan BOS</p>
+              </div>
+            </div>
+            <div class="space-y-2.5 text-sm border-t border-slate-100 pt-4">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Total Kredit Rekening (Masuk):</span>
+                <span id="kas-bank-masuk" class="font-bold text-emerald-700">Rp 0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Total Debit Rekening (Keluar):</span>
+                <span id="kas-bank-keluar" class="font-bold text-rose-700">Rp 0</span>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-slate-200 text-base">
+                <span class="font-bold text-slate-800">Saldo Rekening Bank:</span>
+                <span id="kas-bank-saldo" class="font-extrabold text-madrasah-800">Rp 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buku Pembantu Pajak -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="font-bold text-base text-slate-900">Buku Pembantu Pajak Bendahara Madrasah</h3>
+              <p class="text-xs text-slate-500">Pencatatan pemungutan dan penyetoran pajak negara (PPh 21, PPh 22, PPh 23, PPN).</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 self-start">
+              <button type="button" onclick="printMenuReport('pajak')" class="px-3.5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-print text-madrasah-700"></i>
+                <span>Cetak Pajak & Kas</span>
+              </button>
+              <button type="button" onclick="openModal('modal-tambah-pajak')" class="px-4 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-xs font-bold flex items-center gap-1.5 transition">
+                <i class="fa-solid fa-plus"></i>
+                <span>Catat Pungutan / Setor Pajak</span>
+              </button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200">
+                  <th class="py-3.5 px-4 font-bold">Tanggal</th>
+                  <th class="py-3.5 px-4 font-bold">Jenis Pajak</th>
+                  <th class="py-3.5 px-4 font-bold">Uraian Objek Pajak</th>
+                  <th class="py-3.5 px-4 font-bold">NTPN / Kode Billing</th>
+                  <th class="py-3.5 px-4 font-bold text-right">Pemungutan</th>
+                  <th class="py-3.5 px-4 font-bold text-right">Penyetoran</th>
+                  <th class="py-3.5 px-4 font-bold text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody id="pajak-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: LPJ -->
+      <section id="tab-lpj" class="tab-content hidden space-y-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
+          <div class="flex flex-wrap items-center gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Periode Laporan LPJ</label>
+              <select id="lpj-periode-select" onchange="renderLPJ()" class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm font-semibold bg-white">
+                <option value="2026-11">November 2026</option>
+                <option value="2026-10">Oktober 2026</option>
+                <option value="2026-09">September 2026</option>
+                <option value="2026-08">Agustus 2026</option>
+                <option value="2026-07">Juli 2026</option>
+                <option value="ALL">Rekap Semester Ganjil (Jul - Nov 2026)</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button type="button" onclick="exportBKUCSV()" class="px-4 py-2.5 rounded-xl border border-madrasah-600 text-madrasah-700 hover:bg-madrasah-50 text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+              <i class="fa-solid fa-file-excel"></i>
+              <span>Unduh Lampiran BKU (CSV)</span>
+            </button>
+            <button type="button" onclick="printSection('lpj-document')" class="px-5 py-2.5 rounded-xl bg-madrasah-700 hover:bg-madrasah-800 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm transition">
+              <i class="fa-solid fa-print"></i>
+              <span>Cetak LPJ Resmi (PDF/Printer)</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="lpj-document" class="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-xs max-w-4xl mx-auto">
+          <div class="border-b-4 border-double border-slate-900 pb-4 mb-6 flex flex-col sm:flex-row items-center gap-4 text-center">
+            <div class="w-20 h-20 rounded-xl flex items-center justify-center shrink-0 mx-auto sm:mx-0">
+              <img id="lpj-kop-logo" src="" alt="Logo MA NW SUELA" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 text-center">
+              <p id="lpj-kop-yayasan" class="text-xs font-bold uppercase tracking-widest text-slate-700">YAYASAN PONDOK PESANTREN NURUL HIDAYAH WAL ISTIQOMAH</p>
+              <h2 id="lpj-kop-nama" class="text-lg sm:text-2xl font-extrabold uppercase text-slate-900 tracking-tight">MADRASAH ALIYAH NAHDLATUL WATHAN SUELA (MA NW SUELA)</h2>
+              <p id="lpj-kop-alamat" class="text-xs text-slate-600 mt-0.5">Kec. Suela, Kabupaten Lombok Timur, Nusa Tenggara Barat • NSM: 131252030042 • NPSN: 50220481</p>
+            </div>
+          </div>
+
+          <div class="text-center mb-6">
+            <h3 class="text-base sm:text-lg font-extrabold uppercase underline">LAPORAN PERTANGGUNGJAWABAN (LPJ) BENDAHARA MADRASAH</h3>
+            <p class="text-xs sm:text-sm font-semibold text-slate-700 mt-1">Periode: <span id="lpj-judul-periode">November 2026</span> • Tahun Ajaran 2026/2027</p>
+          </div>
+
+          <div class="mb-6">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">I. Keadaan Pembukuan & Saldo Kas</h4>
+            <table class="w-full border border-slate-400 text-xs sm:text-sm">
+              <tbody class="divide-y divide-slate-300">
+                <tr>
+                  <td class="p-2.5 font-medium bg-slate-50 w-2/3">1. Saldo Awal Periode Sebelumnya</td>
+                  <td id="lpj-saldo-awal" class="p-2.5 text-right font-semibold">Rp 0</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-medium bg-slate-50">2. Jumlah Penerimaan Periode Ini (BOS, SPP/Syahriah, Infaq)</td>
+                  <td id="lpj-total-masuk" class="p-2.5 text-right font-semibold text-emerald-700">Rp 0</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-medium bg-slate-50">3. Jumlah Pengeluaran Periode Ini (Operasional & Belanja RKAM)</td>
+                  <td id="lpj-total-keluar" class="p-2.5 text-right font-semibold text-rose-700">Rp 0</td>
+                </tr>
+                <tr class="bg-emerald-50/70 font-bold">
+                  <td class="p-2.5">4. Saldo Akhir Buku Kas Umum (1 + 2 - 3)</td>
+                  <td id="lpj-saldo-akhir" class="p-2.5 text-right text-slate-900">Rp 0</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mb-6">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">II. Keadaan Fisik Kas & Rekening Bank (Kumulatif)</h4>
+            <table class="w-full border border-slate-400 text-xs sm:text-sm">
+              <tbody class="divide-y divide-slate-300">
+                <tr>
+                  <td class="p-2.5 font-medium bg-slate-50 w-2/3">a. Uang Tunai di Brankas Bendahara</td>
+                  <td id="lpj-fisik-tunai" class="p-2.5 text-right font-semibold">Rp 0</td>
+                </tr>
+                <tr>
+                  <td class="p-2.5 font-medium bg-slate-50">b. Saldo Rekening Bank Madrasah</td>
+                  <td id="lpj-fisik-bank" class="p-2.5 text-right font-semibold">Rp 0</td>
+                </tr>
+                <tr class="bg-slate-100 font-bold">
+                  <td class="p-2.5">Total Keadaan Kas & Bank (a + b)</td>
+                  <td id="lpj-fisik-total" class="p-2.5 text-right">Rp 0</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mb-8">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">III. Rekapitulasi Pengeluaran Berdasarkan Pos Anggaran</h4>
+            <table class="w-full border border-slate-400 text-xs sm:text-sm">
+              <thead>
+                <tr class="bg-slate-100 border-b border-slate-400">
+                  <th class="p-2 text-left">Kode Pos</th>
+                  <th class="p-2 text-left">Uraian Pos Anggaran</th>
+                  <th class="p-2 text-right">Realisasi Periode Ini</th>
+                </tr>
+              </thead>
+              <tbody id="lpj-rincian-pos" class="divide-y divide-slate-300"></tbody>
+            </table>
+          </div>
+
+          <div class="grid grid-cols-2 gap-6 pt-4 text-xs sm:text-sm text-center">
+            <div>
+              <p class="text-slate-600">Mengetahui / Menyetujui,</p>
+              <p class="font-bold text-slate-900">Kepala MA NW Suela</p>
+              <div class="h-20"></div>
+              <p id="lpj-ttd-kepala" class="font-bold underline uppercase">Drs. H. Lalu Ahmad Fauzi, M.Pd.I</p>
+              <p id="lpj-nip-kepala" class="text-xs text-slate-600">NIP. 19740512 200003 1 004</p>
+            </div>
+            <div>
+              <p id="lpj-tanggal-ttd" class="text-slate-600">Suela, 24 November 2026</p>
+              <p class="font-bold text-slate-900">Bendahara MA NW Suela</p>
+              <div class="h-20"></div>
+              <p id="lpj-ttd-bendahara" class="font-bold underline uppercase">Baiq Siti Aminah, S.E.</p>
+              <p id="lpj-nip-bendahara" class="text-xs text-slate-600">NIP. 19880917 201504 2 001</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Area Cetak Dinamis -->
+  <div id="print-area" class="hidden"></div>
+
+  <!-- MODAL 1: BAYAR SPP -->
+  <div id="modal-bayar-spp" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i class="fa-solid fa-hand-holding-dollar text-amber-300 text-lg"></i>
+          <h3 class="font-bold text-base">Input Pembayaran SPP / Syahriah</h3>
+        </div>
+        <button type="button" onclick="closeModal('modal-bayar-spp')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleBayarSPP(event)" class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Siswa</label>
+          <select id="form-spp-siswa" onchange="updateFormSppDetail()" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white"></select>
+        </div>
+
+        <div id="form-spp-info-box" class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between">
+          <span>Status: <strong id="form-spp-status-label">Reguler</strong></span>
+          <span>Tarif SPP: <strong id="form-spp-tarif-label" class="text-sm text-madrasah-800">Rp 0</strong></span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bulan Tagihan</label>
+            <select id="form-spp-bulan" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal Bayar</label>
+            <input type="date" id="form-spp-tanggal" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Metode Pembayaran</label>
+            <select id="form-spp-metode" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="Tunai">Tunai (Kas Brankas)</option>
+              <option value="Transfer Bank">Transfer Bank (Rekening Madrasah)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nominal Dibayar (Rp)</label>
+            <input type="number" id="form-spp-nominal" required min="0" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-madrasah-800" />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="form-spp-auto-kwitansi" checked class="w-4 h-4 accent-madrasah-600 rounded" />
+          <label for="form-spp-auto-kwitansi" class="text-xs font-medium text-slate-600">Tampilkan preview kwitansi resmi setelah disimpan</label>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-bayar-spp')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold hover:bg-slate-50">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-sm font-bold shadow-sm">Simpan ke Google Sheets</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: TAMBAH SISWA -->
+  <div id="modal-tambah-siswa" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base"><i class="fa-solid fa-user-plus text-amber-300 mr-2"></i>Tambah Data Siswa Madrasah</h3>
+        <button type="button" onclick="closeModal('modal-tambah-siswa')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleTambahSiswa(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">NIS / NISN</label>
+            <input type="text" id="new-siswa-nis" required placeholder="Contoh: 2627011" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kelas</label>
+            <select id="new-siswa-kelas" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="X-A">X-A</option>
+              <option value="X-B">X-B</option>
+              <option value="XI-A">XI-A</option>
+              <option value="XI-B">XI-B</option>
+              <option value="XII-A">XII-A</option>
+              <option value="XII-B">XII-B</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Lengkap Siswa</label>
+          <input type="text" id="new-siswa-nama" required placeholder="Contoh: Muhammad Zayd Al-Fatih" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Orang Tua / Wali Murid</label>
+          <input type="text" id="new-siswa-wali" required placeholder="Contoh: Bapak Hendra Wijaya" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status Beasiswa / Keringanan</label>
+            <select id="new-siswa-status" onchange="autoTarifSiswaBaru()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="Reguler">Reguler</option>
+              <option value="Keringanan 50%">Keringanan 50%</option>
+              <option value="Beasiswa Yatim">Beasiswa Yatim (Gratis)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tarif SPP Bulanan (Rp)</label>
+            <input type="number" id="new-siswa-tarif" value="150000" min="0" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold" />
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-tambah-siswa')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-sm font-bold">Simpan Siswa</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: TRANSAKSI BKU -->
+  <div id="modal-transaksi-bku" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base"><i class="fa-solid fa-book-open text-amber-300 mr-2"></i>Catat Transaksi Buku Kas Umum (BKU)</h3>
+        <button type="button" onclick="closeModal('modal-transaksi-bku')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleTambahBKU(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Mutasi</label>
+            <select id="bku-form-jenis" onchange="toggleBkuPosSelect()" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white font-semibold">
+              <option value="masuk">Penerimaan (Debit / Masuk)</option>
+              <option value="keluar">Pengeluaran (Kredit / Keluar)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal Transaksi</label>
+            <input type="date" id="bku-form-tanggal" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Sumber Dana</label>
+            <select id="bku-form-sumber" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="Dana BOS">Dana BOS</option>
+              <option value="SPP & Komite">SPP & Komite</option>
+              <option value="Yayasan / Infaq">Yayasan / Infaq</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Akun Kas / Metode</label>
+            <select id="bku-form-metode" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="Tunai">Tunai (Kas Brankas)</option>
+              <option value="Transfer Bank">Transfer Bank (Rekening Madrasah)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="bku-form-pos-wrapper">
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pos Anggaran RKAM</label>
+          <select id="bku-form-pos" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Uraian Transaksi</label>
+          <input type="text" id="bku-form-uraian" required placeholder="Contoh: Pembelian kertas HVS & tinta printer madrasah" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nominal (Rp)</label>
+          <input type="number" id="bku-form-nominal" required min="1" placeholder="Contoh: 500000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-900" />
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-transaksi-bku')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-sm font-bold">Simpan ke BKU</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: TAMBAH POS RKAM -->
+  <div id="modal-tambah-rkam" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base"><i class="fa-solid fa-scale-balanced text-amber-300 mr-2"></i>Tambah Pos Anggaran RKAM</h3>
+        <button type="button" onclick="closeModal('modal-tambah-rkam')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleTambahRKAM(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kode Pos</label>
+            <input type="text" id="rkam-new-kode" required placeholder="Contoh: 5.2.02" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Sumber Dana</label>
+            <select id="rkam-new-sumber" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="Dana BOS">Dana BOS</option>
+              <option value="SPP & Komite">SPP & Komite</option>
+              <option value="Yayasan / Infaq">Yayasan / Infaq</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Kegiatan / Pos Anggaran</label>
+          <input type="text" id="rkam-new-nama" required placeholder="Contoh: Pengadaan Peralatan Laboratorium IPA" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pagu Anggaran Tahunan (Rp)</label>
+          <input type="number" id="rkam-new-pagu" required min="0" placeholder="Contoh: 10000000" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold" />
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-tambah-rkam')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-sm font-bold">Simpan Pos RKAM</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: TAMBAH PAJAK -->
+  <div id="modal-tambah-pajak" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base"><i class="fa-solid fa-landmark text-amber-300 mr-2"></i>Catat Pungutan / Penyetoran Pajak</h3>
+        <button type="button" onclick="closeModal('modal-tambah-pajak')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleTambahPajak(event)" class="p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal</label>
+            <input type="date" id="pajak-new-tanggal" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Pajak</label>
+            <select id="pajak-new-jenis" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="PPh Pasal 21">PPh Pasal 21</option>
+              <option value="PPh Pasal 22">PPh Pasal 22</option>
+              <option value="PPh Pasal 23">PPh Pasal 23</option>
+              <option value="PPN 11%">PPN 11%</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Uraian Objek Pajak</label>
+          <input type="text" id="pajak-new-uraian" required placeholder="Contoh: PPh 21 Honorarium Kegiatan Madrasah" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nominal Pajak (Rp)</label>
+            <input type="number" id="pajak-new-nominal" required min="1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status Setoran</label>
+            <select id="pajak-new-status" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm bg-white">
+              <option value="Belum Disetor">Belum Disetor</option>
+              <option value="Sudah Disetor">Sudah Disetor</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">NTPN / Kode Billing (Opsional)</label>
+          <input type="text" id="pajak-new-ntpn" placeholder="Contoh: 1234567890123456" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm font-mono" />
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-tambah-pajak')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-sm font-bold">Simpan Pajak</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 6: KWITANSI SPP -->
+  <div id="modal-kwitansi" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between no-print">
+        <h3 class="font-bold text-base"><i class="fa-solid fa-receipt text-amber-300 mr-2"></i>Kwitansi Pembayaran SPP / Syahriah</h3>
+        <button type="button" onclick="closeModal('modal-kwitansi')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-5 sm:p-6 space-y-5">
+        <div id="kwitansi-preview-box"></div>
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2.5 no-print">
+          <button type="button" onclick="closeModal('modal-kwitansi')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50">Tutup</button>
+          <button type="button" onclick="printSection('kwitansi-preview-box')" class="px-5 py-2.5 rounded-xl bg-madrasah-700 hover:bg-madrasah-800 text-white text-sm font-bold flex items-center gap-2">
+            <i class="fa-solid fa-print"></i>
+            <span>Cetak Kwitansi</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6B: CETAK KWITANSI PEMBAYARAN / TAGIHAN TUNGGAKAN SPP -->
+  <div id="modal-kwitansi-spp" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between no-print">
+        <h3 class="font-bold text-base"><i class="fa-solid fa-receipt text-amber-300 mr-2"></i>Cetak Kwitansi Pembayaran / Tunggakan SPP</h3>
+        <button type="button" onclick="closeModal('modal-kwitansi-spp')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-5 sm:p-6 space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 no-print">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Kwitansi</label>
+            <select id="kwt-spp-mode" onchange="renderCustomKwitansiSPP()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white font-semibold">
+              <option value="tunggakan">Kwitansi / Rincian Tunggakan</option>
+              <option value="pembayaran">Kwitansi Pembayaran (Lunas)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Siswa</label>
+            <select id="kwt-spp-siswa" onchange="renderCustomKwitansiSPP()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white"></select>
+          </div>
+          <div id="kwt-spp-bulan-wrap">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bulan Bayar</label>
+            <select id="kwt-spp-bulan" onchange="renderCustomKwitansiSPP()" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm bg-white"></select>
+          </div>
+        </div>
+
+        <div id="kwt-spp-custom-box"></div>
+
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2.5 no-print">
+          <button type="button" onclick="closeModal('modal-kwitansi-spp')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50">Tutup</button>
+          <button type="button" onclick="printSection('kwt-spp-custom-box')" class="px-5 py-2.5 rounded-xl bg-madrasah-700 hover:bg-madrasah-800 text-white text-sm font-bold flex items-center gap-2">
+            <i class="fa-solid fa-print"></i>
+            <span>Cetak Kwitansi</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 7: PENGATURAN IDENTITAS & LOGO -->
+  <div id="modal-pengaturan" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-auto">
+      <div class="bg-madrasah-800 text-white px-6 py-4 flex items-center justify-between">
+        <h3 class="font-bold text-base"><i class="fa-solid fa-gear text-amber-300 mr-2"></i>Identitas & Logo MA NW SUELA</h3>
+        <button type="button" onclick="closeModal('modal-pengaturan')" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="handleSimpanPengaturan(event)" class="p-6 space-y-3.5 max-h-[82vh] overflow-y-auto">
+        <div class="p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200 flex items-center gap-4">
+          <div class="w-16 h-16 rounded-xl bg-emerald-950 p-1 flex items-center justify-center shrink-0 border border-amber-400/60 overflow-hidden">
+            <img id="set-logo-preview" src="" alt="Preview Logo" class="w-full h-full object-contain" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <label class="block text-xs font-bold text-madrasah-900 uppercase mb-1">Logo Resmi Madrasah</label>
+            <input type="file" id="set-logo-file" accept="image/*" onchange="handlePreviewLogoUpload(event)" class="block w-full text-xs text-slate-600 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-madrasah-700 file:text-white hover:file:bg-madrasah-800 cursor-pointer" />
+            <button type="button" onclick="resetDefaultLogo()" class="mt-1.5 text-[11px] font-semibold text-amber-700 hover:underline">
+              <i class="fa-solid fa-rotate-left mr-1"></i>Kembalikan Logo Bawaan MA NW SUELA
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Singkatan / Nama Aplikasi</label>
+            <input type="text" id="set-nama-singkat" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kabupaten / Kecamatan</label>
+            <input type="text" id="set-kota-madrasah" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Lengkap Madrasah</label>
+          <input type="text" id="set-nama-madrasah" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Yayasan / Pondok Pesantren</label>
+          <input type="text" id="set-yayasan-madrasah" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Alamat & NSM/NPSN Madrasah</label>
+          <input type="text" id="set-alamat-madrasah" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Kepala Madrasah</label>
+            <input type="text" id="set-kepala-nama" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">NIP Kepala Madrasah</label>
+            <input type="text" id="set-kepala-nip" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Bendahara Madrasah</label>
+            <input type="text" id="set-bendahara-nama" required class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">NIP Bendahara</label>
+            <input type="text" id="set-bendahara-nip" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm" />
+          </div>
+        </div>
+        <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-pengaturan')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 text-sm font-semibold">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-madrasah-600 text-white text-sm font-bold">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 8: KONFIRMASI RESET -->
+  <div id="modal-reset" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 p-6 text-center space-y-4">
+      <div class="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+      </div>
+      <h3 class="font-bold text-lg text-slate-900">Reset ke Data Demo Awal?</h3>
+      <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+        Seluruh data pada Google Sheets akan direset kembali ke data simulasi awal MA NW SUELA.
+      </p>
+      <div class="flex justify-center gap-3 pt-2">
+        <button type="button" onclick="closeModal('modal-reset')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-semibold">Batal</button>
+        <button type="button" onclick="executeResetDemo()" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold">Ya, Reset Sekarang</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CACHE_KEY = 'SIBENMA_MANWSUELA_CACHE_V3';
+
+    // =========================================================================
+    // URL WEB APP GOOGLE APPS SCRIPT ANDA (/exec)
+    // =========================================================================
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCbBRoEXI2Q585krtiO9kfpyHI1-5jiou4z8KZZAfM4nvb_CuRnITkrSR-2ApoxdD4Jg/exec';
+
+    const DEFAULT_LOGO_MA_NW_SUELA = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+        <defs>
+          <linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f6e2b3"/>
+            <stop offset="35%" stop-color="#c99e56"/>
+            <stop offset="70%" stop-color="#f3d79b"/>
+            <stop offset="100%" stop-color="#8c6222"/>
+          </linearGradient>
+          <linearGradient id="goldDark" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#7a5218"/>
+            <stop offset="50%" stop-color="#d8b068"/>
+            <stop offset="100%" stop-color="#f8e7c0"/>
+          </linearGradient>
+          <radialGradient id="emeraldCore" cx="45%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#177a47"/>
+            <stop offset="65%" stop-color="#0b4f2c"/>
+            <stop offset="100%" stop-color="#052e18"/>
+          </radialGradient>
+          <path id="topArc" d="M 66,200 A 134,134 0 1,1 334,200" />
+          <path id="bottomArc" d="M 60,208 A 140,140 0 0,0 340,208" />
+          <path id="innerTopArc" d="M 96,200 A 104,104 0 1,1 304,200" />
+        </defs>
+        <g stroke="#5c3b0e" stroke-width="2.5">
+          <rect x="68" y="68" width="264" height="264" rx="8" fill="url(#goldRim)" />
+          <rect x="68" y="68" width="264" height="264" rx="8" fill="url(#goldDark)" transform="rotate(45 200 200)" />
+          <rect x="78" y="78" width="244" height="244" rx="6" fill="none" stroke="#fdf0cf" stroke-width="2" />
+          <rect x="78" y="78" width="244" height="244" rx="6" fill="none" stroke="#fdf0cf" stroke-width="2" transform="rotate(45 200 200)" />
+        </g>
+        <circle cx="200" cy="200" r="154" fill="url(#goldRim)" stroke="#5c3b0e" stroke-width="3"/>
+        <circle cx="200" cy="200" r="148" fill="none" stroke="#fff3d6" stroke-width="1.5"/>
+        <circle cx="200" cy="200" r="118" fill="url(#emeraldCore)" stroke="#5c3b0e" stroke-width="3"/>
+        <circle cx="200" cy="200" r="115" fill="none" stroke="#e9c882" stroke-width="1.2"/>
+        <text fill="#144525" font-family="Arial, sans-serif" font-weight="900" font-size="14.5" letter-spacing="0.8">
+          <textPath href="#topArc" startOffset="50%" text-anchor="middle">PONDOK PESANTREN NURUL HIDAYAH WAL ISTIQOMAH</textPath>
+        </text>
+        <text fill="#144525" font-family="Arial, sans-serif" font-weight="900" font-size="14" letter-spacing="1.1">
+          <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">KEC. SUELA - LOMBOK TIMUR</textPath>
+        </text>
+        <polygon points="64,193 66.5,200 74,200 68,204.5 70,211.5 64,207 58,211.5 60,204.5 54,200 61.5,200" fill="#144525"/>
+        <polygon points="336,193 338.5,200 346,200 340,204.5 342,211.5 336,207 330,211.5 332,204.5 326,200 333.5,200" fill="#144525"/>
+        <text fill="#f7e3b5" font-family="Arial, sans-serif" font-weight="800" font-size="11.2" letter-spacing="0.6">
+          <textPath href="#innerTopArc" startOffset="50%" text-anchor="middle">MADRASAH ALIYAH NAHDLATUL WATHAN SUELA</textPath>
+        </text>
+        <path d="M 213,116 A 24,24 0 1,0 213,158 A 19,19 0 1,1 213,116 Z" fill="url(#goldRim)" stroke="#4a2e08" stroke-width="1"/>
+        <polygon points="205,123 208,132 217,132 210,137 212.5,146 205,140.5 197.5,146 200,137 193,132 202,132" fill="#fff6dc" stroke="#5c3b0e" stroke-width="0.8"/>
+        <polygon points="114,194 117,202 126,202 119,207 121.5,215 114,210 106.5,215 109,207 102,202 111,202" fill="url(#goldRim)" stroke="#4a2e08" stroke-width="0.8"/>
+        <polygon points="286,194 289,202 298,202 291,207 293.5,215 286,210 278.5,215 281,207 274,202 283,202" fill="url(#goldRim)" stroke="#4a2e08" stroke-width="0.8"/>
+        <path d="M 155,256 L 235,216 L 243,223 L 163,263 Z" fill="url(#goldDark)" stroke="#4a2e08" stroke-width="1.5"/>
+        <path d="M 245,256 L 165,216 L 157,223 L 237,263 Z" fill="url(#goldRim)" stroke="#4a2e08" stroke-width="1.5"/>
+        <path d="M 146,184 Q 173,178 200,190 Q 227,178 254,184 L 260,224 Q 230,217 200,228 Q 170,217 140,224 Z" fill="#fff9eb" stroke="#4a2e08" stroke-width="2"/>
+        <line x1="200" y1="190" x2="200" y2="228" stroke="#7a5218" stroke-width="2"/>
+        <g stroke="#8c6222" stroke-width="1.6" stroke-linecap="round">
+          <line x1="156" y1="194" x2="190" y2="196"/>
+          <line x1="155" y1="202" x2="190" y2="204"/>
+          <line x1="154" y1="210" x2="190" y2="212"/>
+          <line x1="210" y1="196" x2="244" y2="194"/>
+          <line x1="210" y1="204" x2="245" y2="202"/>
+          <line x1="210" y1="212" x2="246" y2="210"/>
+        </g>
+        <path d="M 118,248 L 136,256 L 136,276 L 114,268 L 122,258 Z" fill="url(#goldDark)" stroke="#4a2e08" stroke-width="1.5"/>
+        <path d="M 282,248 L 264,256 L 264,276 L 286,268 L 278,258 Z" fill="url(#goldDark)" stroke="#4a2e08" stroke-width="1.5"/>
+        <path d="M 132,254 Q 200,266 268,254 L 264,280 Q 200,292 136,280 Z" fill="url(#goldRim)" stroke="#4a2e08" stroke-width="2"/>
+        <text x="200" y="274" text-anchor="middle" fill="#0a2e18" font-family="Arial, sans-serif" font-weight="900" font-size="16.5" letter-spacing="1.2">MA NW SUELA</text>
+      </svg>
+    `);
+
+    const BULAN_TA = [
+      { key: '2026-07', short: 'Jul', label: 'Juli 2026', jatuhTempo: true },
+      { key: '2026-08', short: 'Agu', label: 'Agustus 2026', jatuhTempo: true },
+      { key: '2026-09', short: 'Sep', label: 'September 2026', jatuhTempo: true },
+      { key: '2026-10', short: 'Okt', label: 'Oktober 2026', jatuhTempo: true },
+      { key: '2026-11', short: 'Nov', label: 'November 2026', jatuhTempo: true },
+      { key: '2026-12', short: 'Des', label: 'Desember 2026', jatuhTempo: false },
+      { key: '2027-01', short: 'Jan', label: 'Januari 2027', jatuhTempo: false },
+      { key: '2027-02', short: 'Feb', label: 'Februari 2027', jatuhTempo: false },
+      { key: '2027-03', short: 'Mar', label: 'Maret 2027', jatuhTempo: false },
+      { key: '2027-04', short: 'Apr', label: 'April 2027', jatuhTempo: false },
+      { key: '2027-05', short: 'Mei', label: 'Mei 2027', jatuhTempo: false },
+      { key: '2027-06', short: 'Jun', label: 'Juni 2027', jatuhTempo: false },
+    ];
+
+    function getFallbackDemoData() {
+      return {
+        settings: {
+          namaSingkat: 'MA NW SUELA',
+          namaMadrasah: 'Madrasah Aliyah Nahdlatul Wathan Suela',
+          yayasan: 'YAYASAN PONDOK PESANTREN NURUL HIDAYAH WAL ISTIQOMAH',
+          alamat: 'Kec. Suela, Kabupaten Lombok Timur, Nusa Tenggara Barat • NSM: 131252030042 • NPSN: 50220481',
+          kepalaNama: 'Drs. H. Lalu Ahmad Fauzi, M.Pd.I',
+          kepalaNip: 'NIP. 19740512 200003 1 004',
+          bendaharaNama: 'Baiq Siti Aminah, S.E.',
+          bendaharaNip: 'NIP. 19880917 201504 2 001',
+          kota: 'Suela',
+          logoUrl: DEFAULT_LOGO_MA_NW_SUELA
+        },
+        rkam: [
+          { kode: '5.1.01', nama: 'Honorarium Guru Non-ASN & Tenaga Kependidikan', sumber: 'Dana BOS', pagu: 48000000 },
+          { kode: '5.1.02', nama: 'Operasional Perkantoran, ATK & Penggandaan Soal', sumber: 'Dana BOS', pagu: 18000000 },
+          { kode: '5.1.03', nama: 'Langganan Daya & Jasa (Listrik, Internet, Air)', sumber: 'SPP & Komite', pagu: 12000000 },
+          { kode: '5.1.04', nama: 'Kegiatan Kesiswaan, Tahfidz & Lomba KSM/AKSIOMA', sumber: 'SPP & Komite', pagu: 15000000 },
+          { kode: '5.2.01', nama: 'Pemeliharaan Sarana Prasarana & Ruang Kelas', sumber: 'Yayasan / Infaq', pagu: 20000000 },
+        ],
+        students: [
+          { id: 'S01', nis: '2627001', nama: 'Lalu Muhammad Zaki Al-Mubarok', kelas: 'X-A', wali: 'Bapak H. Lalu Ridwan', status: 'Reguler', tarif: 150000, payments: {
+            '2026-07': { noKwitansi: 'KWT/MANWS/2026/001', tanggal: '2026-07-10', nominal: 150000, metode: 'Tunai' },
+            '2026-08': { noKwitansi: 'KWT/MANWS/2026/012', tanggal: '2026-08-08', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-09': { noKwitansi: 'KWT/MANWS/2026/025', tanggal: '2026-09-09', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-10': { noKwitansi: 'KWT/MANWS/2026/038', tanggal: '2026-10-10', nominal: 150000, metode: 'Tunai' },
+            '2026-11': { noKwitansi: 'KWT/MANWS/2026/051', tanggal: '2026-11-05', nominal: 150000, metode: 'Transfer Bank' },
+          }},
+          { id: 'S02', nis: '2627002', nama: 'Baiq Aisyah Humaira Putri', kelas: 'X-A', wali: 'Ibu Hj. Nurhayati', status: 'Reguler', tarif: 150000, payments: {
+            '2026-07': { noKwitansi: 'KWT/MANWS/2026/002', tanggal: '2026-07-11', nominal: 150000, metode: 'Tunai' },
+            '2026-08': { noKwitansi: 'KWT/MANWS/2026/013', tanggal: '2026-08-10', nominal: 150000, metode: 'Tunai' },
+            '2026-09': { noKwitansi: 'KWT/MANWS/2026/026', tanggal: '2026-09-12', nominal: 150000, metode: 'Tunai' },
+            '2026-10': { noKwitansi: 'KWT/MANWS/2026/039', tanggal: '2026-10-14', nominal: 150000, metode: 'Tunai' },
+          }},
+          { id: 'S03', nis: '2627003', nama: 'Muhammad Farhan Hakim', kelas: 'X-B', wali: 'Bapak Syamsul Bahri', status: 'Keringanan 50%', tarif: 75000, payments: {
+            '2026-07': { noKwitansi: 'KWT/MANWS/2026/003', tanggal: '2026-07-14', nominal: 75000, metode: 'Tunai' },
+            '2026-08': { noKwitansi: 'KWT/MANWS/2026/014', tanggal: '2026-08-12', nominal: 75000, metode: 'Tunai' },
+            '2026-09': { noKwitansi: 'KWT/MANWS/2026/027', tanggal: '2026-09-15', nominal: 75000, metode: 'Tunai' },
+            '2026-10': { noKwitansi: 'KWT/MANWS/2026/040', tanggal: '2026-10-16', nominal: 75000, metode: 'Tunai' },
+            '2026-11': { noKwitansi: 'KWT/MANWS/2026/052', tanggal: '2026-11-10', nominal: 75000, metode: 'Tunai' },
+          }},
+          { id: 'S04', nis: '2627004', nama: 'Fatimah Az-Zahra', kelas: 'XI-A', wali: 'Ibu Hj. Maryam', status: 'Beasiswa Yatim', tarif: 0, payments: {
+            '2026-07': { noKwitansi: 'BEASISWA-YATIM', tanggal: '2026-07-01', nominal: 0, metode: 'Beasiswa' },
+            '2026-08': { noKwitansi: 'BEASISWA-YATIM', tanggal: '2026-08-01', nominal: 0, metode: 'Beasiswa' },
+            '2026-09': { noKwitansi: 'BEASISWA-YATIM', tanggal: '2026-09-01', nominal: 0, metode: 'Beasiswa' },
+            '2026-10': { noKwitansi: 'BEASISWA-YATIM', tanggal: '2026-10-01', nominal: 0, metode: 'Beasiswa' },
+            '2026-11': { noKwitansi: 'BEASISWA-YATIM', tanggal: '2026-11-01', nominal: 0, metode: 'Beasiswa' },
+          }},
+          { id: 'S05', nis: '2627005', nama: 'Bilal Abdurrahman', kelas: 'XI-A', wali: 'Bapak Dedi Kurniawan', status: 'Reguler', tarif: 150000, payments: {
+            '2026-07': { noKwitansi: 'KWT/MANWS/2026/005', tanggal: '2026-07-15', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-08': { noKwitansi: 'KWT/MANWS/2026/016', tanggal: '2026-08-15', nominal: 150000, metode: 'Transfer Bank' },
+          }},
+          { id: 'S06', nis: '2627006', nama: 'Khadijah Salsabila', kelas: 'XI-B', wali: 'Bapak Irfan Hakim', status: 'Reguler', tarif: 150000, payments: {
+            '2026-07': { noKwitansi: 'KWT/MANWS/2026/006', tanggal: '2026-07-08', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-08': { noKwitansi: 'KWT/MANWS/2026/017', tanggal: '2026-08-07', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-09': { noKwitansi: 'KWT/MANWS/2026/028', tanggal: '2026-09-08', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-10': { noKwitansi: 'KWT/MANWS/2026/041', tanggal: '2026-10-09', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-11': { noKwitansi: 'KWT/MANWS/2026/053', tanggal: '2026-11-11', nominal: 150000, metode: 'Transfer Bank' },
+          }},
+          { id: 'S07', nis: '2627007', nama: 'Lalu Umar Al-Faruq', kelas: 'XII-A', wali: 'Bapak Lalu Eko Prasetyo', status: 'Reguler', tarif: 150000, payments: {
+            '2026-07': { noKwitansi: 'KWT/MANWS/2026/007', tanggal: '2026-07-18', nominal: 150000, metode: 'Tunai' },
+            '2026-08': { noKwitansi: 'KWT/MANWS/2026/018', tanggal: '2026-08-20', nominal: 150000, metode: 'Tunai' },
+            '2026-09': { noKwitansi: 'KWT/MANWS/2026/029', tanggal: '2026-09-21', nominal: 150000, metode: 'Tunai' },
+          }},
+          { id: 'S08', nis: '2627008', nama: 'Baiq Zainab Nabila Syifa', kelas: 'XII-B', wali: 'Ibu Ratna Dewi', status: 'Reguler', tarif: 150000, payments: {
+            '2026-07': { noKwitansi: 'KWT/MANWS/2026/008', tanggal: '2026-07-09', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-08': { noKwitansi: 'KWT/MANWS/2026/019', tanggal: '2026-08-09', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-09': { noKwitansi: 'KWT/MANWS/2026/030', tanggal: '2026-09-10', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-10': { noKwitansi: 'KWT/MANWS/2026/042', tanggal: '2026-10-11', nominal: 150000, metode: 'Transfer Bank' },
+            '2026-11': { noKwitansi: 'KWT/MANWS/2026/054', tanggal: '2026-11-12', nominal: 150000, metode: 'Transfer Bank' },
+          }},
+        ],
+        bku: [
+          { id: 'BKU01', tanggal: '2026-07-05', noBukti: 'BKM/BOS/001', kodePos: '4.1.01', uraian: 'Pencairan Dana BOS Tahap II Tahun 2026', sumber: 'Dana BOS', metode: 'Transfer Bank', jenis: 'masuk', nominal: 45000000 },
+          { id: 'BKU02', tanggal: '2026-07-15', noBukti: 'BKM/SPP/007', kodePos: '4.2.01', uraian: 'Rekap Penerimaan SPP/Syahriah Siswa Bulan Juli 2026', sumber: 'SPP & Komite', metode: 'Tunai', jenis: 'masuk', nominal: 975000 },
+          { id: 'BKU03', tanggal: '2026-07-28', noBukti: 'BKK/BOS/001', kodePos: '5.1.01', uraian: 'Pembayaran Honorarium Guru Non-ASN Bulan Juli 2026', sumber: 'Dana BOS', metode: 'Transfer Bank', jenis: 'keluar', nominal: 7500000 },
+          { id: 'BKU04', tanggal: '2026-08-18', noBukti: 'BKM/SPP/008', kodePos: '4.2.01', uraian: 'Rekap Penerimaan SPP/Syahriah Siswa Bulan Agustus 2026', sumber: 'SPP & Komite', metode: 'Transfer Bank', jenis: 'masuk', nominal: 975000 },
+          { id: 'BKU05', tanggal: '2026-08-25', noBukti: 'BKK/BOS/002', kodePos: '5.1.02', uraian: 'Belanja ATK, Tinta Printer & Kertas HVS Perkantoran', sumber: 'Dana BOS', metode: 'Tunai', jenis: 'keluar', nominal: 1850000 },
+          { id: 'BKU06', tanggal: '2026-08-29', noBukti: 'BKK/BOS/003', kodePos: '5.1.01', uraian: 'Pembayaran Honorarium Guru Non-ASN Bulan Agustus 2026', sumber: 'Dana BOS', metode: 'Transfer Bank', jenis: 'keluar', nominal: 7500000 },
+          { id: 'BKU07', tanggal: '2026-09-12', noBukti: 'BKM/YYS/001', kodePos: '4.3.01', uraian: 'Infaq & Bantuan Pembangunan Sarana dari Yayasan', sumber: 'Yayasan / Infaq', metode: 'Transfer Bank', jenis: 'masuk', nominal: 10000000 },
+          { id: 'BKU08', tanggal: '2026-09-20', noBukti: 'BKM/SPP/009', kodePos: '4.2.01', uraian: 'Rekap Penerimaan SPP/Syahriah Siswa Bulan September 2026', sumber: 'SPP & Komite', metode: 'Tunai', jenis: 'masuk', nominal: 825000 },
+          { id: 'BKU09', tanggal: '2026-09-28', noBukti: 'BKK/SPP/001', kodePos: '5.1.03', uraian: 'Pembayaran Listrik, WiFi & Air Madrasah (Jul-Sep)', sumber: 'SPP & Komite', metode: 'Transfer Bank', jenis: 'keluar', nominal: 2450000 },
+          { id: 'BKU10', tanggal: '2026-09-29', noBukti: 'BKK/BOS/004', kodePos: '5.1.01', uraian: 'Pembayaran Honorarium Guru Non-ASN Bulan September 2026', sumber: 'Dana BOS', metode: 'Transfer Bank', jenis: 'keluar', nominal: 7500000 },
+          { id: 'BKU11', tanggal: '2026-10-15', noBukti: 'BKM/SPP/010', kodePos: '4.2.01', uraian: 'Rekap Penerimaan SPP/Syahriah Siswa Bulan Oktober 2026', sumber: 'SPP & Komite', metode: 'Transfer Bank', jenis: 'masuk', nominal: 675000 },
+          { id: 'BKU12', tanggal: '2026-10-22', noBukti: 'BKK/YYS/001', kodePos: '5.2.01', uraian: 'Perbaikan Papan Tulis, Pengecatan & Kipas Ruang Kelas', sumber: 'Yayasan / Infaq', metode: 'Tunai', jenis: 'keluar', nominal: 3600000 },
+          { id: 'BKU13', tanggal: '2026-10-29', noBukti: 'BKK/BOS/005', kodePos: '5.1.01', uraian: 'Pembayaran Honorarium Guru Non-ASN Bulan Oktober 2026', sumber: 'Dana BOS', metode: 'Transfer Bank', jenis: 'keluar', nominal: 7500000 },
+          { id: 'BKU14', tanggal: '2026-11-12', noBukti: 'BKM/SPP/011', kodePos: '4.2.01', uraian: 'Penerimaan SPP Siswa Bulan November 2026 (Berjalan)', sumber: 'SPP & Komite', metode: 'Transfer Bank', jenis: 'masuk', nominal: 525000 },
+          { id: 'BKU15', tanggal: '2026-11-18', noBukti: 'BKK/SPP/002', kodePos: '5.1.04', uraian: 'Konsumsi & Transport Delegasi Lomba KSM Tingkat Kab.', sumber: 'SPP & Komite', metode: 'Tunai', jenis: 'keluar', nominal: 1450000 },
+        ],
+        pajak: [
+          { id: 'PJK01', tanggal: '2026-07-29', jenis: 'PPh Pasal 21', uraian: 'PPh 21 Honorarium Guru Tidak Tetap Bulan Juli 2026', nominal: 225000, status: 'Sudah Disetor', ntpn: '9182736450192837' },
+          { id: 'PJK02', tanggal: '2026-08-26', jenis: 'PPN 11%', uraian: 'PPN Belanja ATK & Bahan Praktikum (CV Mitra Ilmu)', nominal: 203500, status: 'Sudah Disetor', ntpn: '7463524190817263' },
+          { id: 'PJK03', tanggal: '2026-10-24', jenis: 'PPh Pasal 23', uraian: 'PPh 23 Jasa Pemeliharaan Sarana Kelas', nominal: 72000, status: 'Belum Disetor', ntpn: '-' },
+        ]
+      };
+    }
+
+    let appState = loadLocalCache();
+
+    // Cek apakah URL Web App valid (bukan placeholder)
+    function isAppsScriptAvailable() {
+      return Boolean(
+        APPS_SCRIPT_URL &&
+        APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/') &&
+        !APPS_SCRIPT_URL.includes('GANTI_DENGAN_ID_DEPLOYMENT_WEB_APP_ANDA')
+      );
+    }
+
+    function loadLocalCache() {
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (!parsed.settings.logoUrl) parsed.settings.logoUrl = DEFAULT_LOGO_MA_NW_SUELA;
+          return parsed;
+        }
+      } catch (e) {}
+      return getFallbackDemoData();
+    }
+
+    function saveLocalCache(data = appState) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function setSyncOverlay(show, text = 'Menyinkronkan data dengan Google Sheets...') {
+      const el = document.getElementById('sync-overlay');
+      const txt = document.getElementById('sync-status-text');
+      if (!el) return;
+      if (txt) txt.textContent = text;
+      if (show) {
+        el.classList.remove('hidden');
+        el.classList.add('flex');
+      } else {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+      }
+    }
+
+    // Pemanggilan API ke Google Apps Script Web App menggunakan fetch()
+    async function callServer(funcName, ...args) {
+      if (!isAppsScriptAvailable()) {
+        return { ok: true, localOnly: true };
+      }
+
+      try {
+        if (funcName === 'getInitialData') {
+          const response = await fetch(`${APPS_SCRIPT_URL}?action=getInitialData`);
+          if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+          return await response.json();
+        }
+
+        const response = await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: funcName, args: args })
+        });
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        return await response.json();
+      } catch (err) {
+        throw new Error('Koneksi ke Google Sheets gagal: ' + err.message);
+      }
+    }
+
+    async function syncFromGoogleSheets(showNotify = false) {
+      const badge = document.getElementById('db-badge');
+      if (!isAppsScriptAvailable()) {
+        if (badge) {
+          badge.textContent = 'Mode Lokal (URL Web App Belum Diisi)';
+          badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800';
+        }
+        refreshAllViews();
+        return;
+      }
+
+      setSyncOverlay(true, 'Memuat data dari Google Sheets...');
+      try {
+        const res = await callServer('getInitialData');
+        if (res && res.ok && res.data) {
+          appState = res.data;
+          if (!appState.settings.logoUrl) {
+            appState.settings.logoUrl = DEFAULT_LOGO_MA_NW_SUELA;
+          }
+          saveLocalCache(appState);
+          if (badge) {
+            badge.textContent = 'Terhubung Google Sheets';
+            badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
+          }
+          refreshAllViews();
+          if (showNotify) showToast('Data berhasil disinkronkan dari Google Sheets.');
+        } else {
+          showToast(res && res.message ? res.message : 'Gagal memuat data Google Sheets.', 'error');
+        }
+      } catch (err) {
+        if (badge) {
+          badge.textContent = 'Offline / Gagal Koneksi';
+          badge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800';
+        }
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    function formatRupiah(angka) {
+      return 'Rp ' + (Number(angka) || 0).toLocaleString('id-ID');
+    }
+
+    function formatTanggalIndo(isoDate) {
+      if (!isoDate) return '-';
+      const bulanIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      const parts = String(isoDate).split('-');
+      if (parts.length !== 3) return isoDate;
+      const idx = parseInt(parts[1], 10) - 1;
+      if (idx < 0 || idx > 11) return isoDate;
+      return `${parseInt(parts[2], 10)} ${bulanIndo[idx]} ${parts[0]}`;
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const colors = type === 'success'
+        ? 'bg-madrasah-900 text-white border-emerald-500'
+        : type === 'warning'
+        ? 'bg-amber-600 text-white border-amber-300'
+        : 'bg-rose-700 text-white border-rose-400';
+      const icon = type === 'success' ? 'fa-circle-check text-amber-300' : 'fa-circle-exclamation text-white';
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border-l-4 shadow-xl text-xs sm:text-sm font-medium transition-all duration-300 ${colors}`;
+      toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      sidebar.classList.toggle('-translate-x-full');
+      backdrop.classList.toggle('hidden');
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      const activeSection = document.getElementById(`tab-${tabName}`);
+      if (activeSection) activeSection.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+          btn.className = 'nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all bg-emerald-700/90 text-white shadow-md shadow-emerald-950/40';
+        } else {
+          btn.className = 'nav-btn w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium text-emerald-100 hover:bg-emerald-800/70 transition-all';
+        }
+      });
+
+      const titles = {
+        dashboard: [`Dashboard Keuangan ${appState.settings.namaSingkat}`, `${appState.settings.namaMadrasah} • Ikhtisar real-time arus kas, realisasi SPP siswa, dan serapan anggaran.`],
+        spp: [`Administrasi SPP & Syahriah — ${appState.settings.namaSingkat}`, 'Kontrol kartu pembayaran bulanan, cetak kwitansi resmi, dan rekap tunggakan siswa.'],
+        bku: [`Buku Kas Umum (BKU) — ${appState.settings.namaSingkat}`, 'Pencatatan kronologis penerimaan dan pengeluaran kas madrasah dengan saldo berjalan.'],
+        rkam: [`RKAM & Anggaran Belanja — ${appState.settings.namaSingkat}`, 'Monitoring pagu anggaran tahunan vs realisasi pengeluaran per pos kegiatan.'],
+        pajak: [`Buku Pembantu Pajak & Kas Bank — ${appState.settings.namaSingkat}`, 'Pemungutan/penyetoran pajak belanja madrasah serta rekonsiliasi brankas & bank.'],
+        lpj: [`Laporan Pertanggungjawaban (LPJ) — ${appState.settings.namaSingkat}`, 'Format resmi laporan bulanan bendahara siap cetak & tanda tangan Kepala Madrasah.']
+      };
+
+      if (titles[tabName]) {
+        document.getElementById('page-title').textContent = titles[tabName][0];
+        document.getElementById('page-subtitle').textContent = titles[tabName][1];
+      }
+
+      if (window.innerWidth < 1024) {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar.classList.contains('-translate-x-full')) toggleSidebar();
+      }
+
+      refreshAllViews();
+    }
+
+    function switchSppSubtab(sub) {
+      document.querySelectorAll('.spp-subview').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`spp-view-${sub}`).classList.remove('hidden');
+
+      document.querySelectorAll('.spp-subbtn').forEach(btn => {
+        btn.className = 'spp-subbtn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+      });
+      document.getElementById(`subbtn-${sub}`).className = 'spp-subbtn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-madrasah-700 text-white transition';
+    }
+
+    let pendingUploadedLogo = null;
+
+    function openModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) {
+        showToast(`Modal "${id}" tidak ditemukan.`, 'error');
+        return;
+      }
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      if (id === 'modal-bayar-spp') populateFormBayarSPP();
+      if (id === 'modal-kwitansi-spp') populateKwitansiSPPModal();
+      if (id === 'modal-transaksi-bku') populateFormBKU();
+      if (id === 'modal-tambah-pajak') {
+        const tglInput = document.getElementById('pajak-new-tanggal');
+        if (tglInput) tglInput.value = '2026-11-24';
+      }
+      if (id === 'modal-pengaturan') {
+        pendingUploadedLogo = null;
+        document.getElementById('set-logo-file').value = '';
+        document.getElementById('set-logo-preview').src = appState.settings.logoUrl || DEFAULT_LOGO_MA_NW_SUELA;
+        document.getElementById('set-nama-singkat').value = appState.settings.namaSingkat || 'MA NW SUELA';
+        document.getElementById('set-kota-madrasah').value = appState.settings.kota || 'Suela';
+        document.getElementById('set-nama-madrasah').value = appState.settings.namaMadrasah;
+        document.getElementById('set-yayasan-madrasah').value = appState.settings.yayasan || 'YAYASAN PONDOK PESANTREN NURUL HIDAYAH WAL ISTIQOMAH';
+        document.getElementById('set-alamat-madrasah').value = appState.settings.alamat;
+        document.getElementById('set-kepala-nama').value = appState.settings.kepalaNama;
+        document.getElementById('set-kepala-nip').value = appState.settings.kepalaNip;
+        document.getElementById('set-bendahara-nama').value = appState.settings.bendaharaNama;
+        document.getElementById('set-bendahara-nip').value = appState.settings.bendaharaNip;
+      }
+    }
+
+    function handlePreviewLogoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        pendingUploadedLogo = evt.target.result;
+        document.getElementById('set-logo-preview').src = pendingUploadedLogo;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetDefaultLogo() {
+      pendingUploadedLogo = DEFAULT_LOGO_MA_NW_SUELA;
+      document.getElementById('set-logo-preview').src = DEFAULT_LOGO_MA_NW_SUELA;
+      document.getElementById('set-logo-file').value = '';
+      showToast('Pratinjau dikembalikan ke logo bawaan MA NW SUELA.');
+    }
+
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function renderDashboard() {
+      let totalMasuk = 0;
+      let totalKeluar = 0;
+      let kasTunai = 0;
+      let kasBank = 0;
+
+      const sumberMap = {
+        'Dana BOS': 0,
+        'SPP & Komite': 0,
+        'Yayasan / Infaq': 0
+      };
+
+      appState.bku.forEach(item => {
+        const nom = Number(item.nominal) || 0;
+        if (item.jenis === 'masuk') {
+          totalMasuk += nom;
+          if (sumberMap[item.sumber] !== undefined) sumberMap[item.sumber] += nom;
+          if (item.metode === 'Tunai') kasTunai += nom;
+          else kasBank += nom;
+        } else {
+          totalKeluar += nom;
+          if (item.metode === 'Tunai') kasTunai -= nom;
+          else kasBank -= nom;
+        }
+      });
+
+      document.getElementById('dash-total-masuk').textContent = formatRupiah(totalMasuk);
+      document.getElementById('dash-total-keluar').textContent = formatRupiah(totalKeluar);
+      document.getElementById('dash-saldo-akhir').textContent = formatRupiah(totalMasuk - totalKeluar);
+      document.getElementById('dash-kas-tunai').textContent = formatRupiah(kasTunai);
+      document.getElementById('dash-kas-bank').textContent = formatRupiah(kasBank);
+
+      const bulanBerjalan = '2026-11';
+      const totalSiswa = appState.students.length;
+      const lunasBulanIni = appState.students.filter(s => s.payments && s.payments[bulanBerjalan]).length;
+      const persenSpp = totalSiswa > 0 ? Math.round((lunasBulanIni / totalSiswa) * 100) : 0;
+
+      document.getElementById('dash-spp-persen').textContent = `${persenSpp}%`;
+      document.getElementById('dash-spp-bar').style.width = `${persenSpp}%`;
+      document.getElementById('dash-spp-detail').textContent = `${lunasBulanIni} dari ${totalSiswa} siswa lunas bulan berjalan`;
+
+      const komposisiContainer = document.getElementById('komposisi-dana-list');
+      komposisiContainer.innerHTML = '';
+      const colors = {
+        'Dana BOS': 'bg-madrasah-600',
+        'SPP & Komite': 'bg-amber-500',
+        'Yayasan / Infaq': 'bg-teal-500'
+      };
+      Object.keys(sumberMap).forEach(key => {
+        const val = sumberMap[key];
+        const pct = totalMasuk > 0 ? Math.round((val / totalMasuk) * 100) : 0;
+        komposisiContainer.innerHTML += `
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span class="text-slate-700">${key}</span>
+              <span class="text-slate-900">${formatRupiah(val)} (${pct}%)</span>
+            </div>
+            <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+              <div class="${colors[key]} h-full rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      const bulanGrafik = BULAN_TA.slice(0, 6);
+      let maxVal = 1000000;
+      const monthlyData = bulanGrafik.map(b => {
+        let m = 0, k = 0;
+        appState.bku.forEach(t => {
+          if (String(t.tanggal).startsWith(b.key)) {
+            if (t.jenis === 'masuk') m += Number(t.nominal);
+            else k += Number(t.nominal);
+          }
+        });
+        if (m > maxVal) maxVal = m;
+        if (k > maxVal) maxVal = k;
+        return { short: b.short, masuk: m, keluar: k };
+      });
+
+      document.getElementById('dashboard-chart-container').innerHTML = monthlyData.map(d => {
+        const hMasuk = Math.max(4, Math.round((d.masuk / maxVal) * 180));
+        const hKeluar = Math.max(4, Math.round((d.keluar / maxVal) * 180));
+        return `
+          <div class="flex-1 min-w-[64px] flex flex-col items-center group">
+            <div class="flex items-end gap-1.5 h-48 w-full justify-center">
+              <div title="Masuk: ${formatRupiah(d.masuk)}" style="height: ${hMasuk}px" class="w-4 sm:w-5 bg-madrasah-600 hover:bg-madrasah-700 rounded-t-md transition-all"></div>
+              <div title="Keluar: ${formatRupiah(d.keluar)}" style="height: ${hKeluar}px" class="w-4 sm:w-5 bg-amber-400 hover:bg-amber-500 rounded-t-md transition-all"></div>
+            </div>
+            <span class="text-xs font-bold text-slate-600 mt-2">${d.short}</span>
+          </div>
+        `;
+      }).join('');
+
+      const sortedBku = [...appState.bku].sort((a, b) => String(b.tanggal).localeCompare(String(a.tanggal))).slice(0, 5);
+      const recentTbody = document.getElementById('dash-recent-bku');
+      recentTbody.innerHTML = sortedBku.map(t => `
+        <tr class="hover:bg-slate-50/80 transition">
+          <td class="py-3 px-4">
+            <div class="font-semibold text-slate-800 text-xs">${formatTanggalIndo(t.tanggal)}</div>
+            <div class="text-[11px] text-slate-400 font-mono">${t.noBukti}</div>
+          </td>
+          <td class="py-3 px-4 text-xs sm:text-sm font-medium text-slate-700">${t.uraian}</td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 text-slate-700">${t.sumber}</span>
+          </td>
+          <td class="py-3 px-4 text-right font-bold text-xs sm:text-sm ${t.jenis === 'masuk' ? 'text-emerald-700' : 'text-rose-600'}">
+            ${t.jenis === 'masuk' ? '+' : '-'} ${formatRupiah(t.nominal)}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function getFilteredStudents() {
+      const q = (document.getElementById('filter-spp-search')?.value || '').toLowerCase();
+      const kelas = document.getElementById('filter-spp-kelas')?.value || 'ALL';
+      const status = document.getElementById('filter-spp-status')?.value || 'ALL';
+
+      return appState.students.filter(s => {
+        const matchQ = String(s.nama).toLowerCase().includes(q) || String(s.nis).toLowerCase().includes(q);
+        const matchK = kelas === 'ALL' || s.kelas === kelas;
+        const matchS = status === 'ALL' || s.status === status;
+        return matchQ && matchK && matchS;
+      });
+    }
+
+    function renderSppViews() {
+      const students = getFilteredStudents();
+      const matriksTbody = document.getElementById('spp-matriks-tbody');
+      const tunggakanTbody = document.getElementById('spp-tunggakan-tbody');
+      const masterTbody = document.getElementById('spp-master-tbody');
+
+      let totalTunggakanGlobal = 0;
+      let jumlahSiswaMenunggak = 0;
+
+      appState.students.forEach(s => {
+        let tunggakBulan = 0;
+        BULAN_TA.forEach(b => {
+          if (b.jatuhTempo && (!s.payments || !s.payments[b.key])) {
+            tunggakBulan++;
+          }
+        });
+        if (tunggakBulan > 0 && s.tarif > 0) {
+          jumlahSiswaMenunggak++;
+          totalTunggakanGlobal += tunggakBulan * s.tarif;
+        }
+      });
+
+      const badgeTunggakan = document.getElementById('badge-tunggakan');
+      if (badgeTunggakan) badgeTunggakan.textContent = jumlahSiswaMenunggak;
+      const rekapTotal = document.getElementById('rekap-total-tunggakan');
+      if (rekapTotal) rekapTotal.textContent = formatRupiah(totalTunggakanGlobal);
+      const rekapJumlah = document.getElementById('rekap-jumlah-menunggak');
+      if (rekapJumlah) rekapJumlah.textContent = `${jumlahSiswaMenunggak} Siswa`;
+
+      if (matriksTbody) {
+        matriksTbody.innerHTML = students.map(s => {
+          const cells = BULAN_TA.map(b => {
+            const paid = s.payments && s.payments[b.key];
+            if (paid) {
+              return `
+                <td class="py-2 px-1 text-center">
+                  <button type="button" onclick="showKwitansi('${s.id}', '${b.key}')" title="Lunas (${formatTanggalIndo(paid.tanggal)}) - Klik untuk Kwitansi"
+                    class="w-7 h-7 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white inline-flex items-center justify-center shadow-2xs transition">
+                    <i class="fa-solid fa-check text-[11px]"></i>
+                  </button>
+                </td>
+              `;
+            } else if (b.jatuhTempo) {
+              return `
+                <td class="py-2 px-1 text-center">
+                  <button type="button" onclick="quickBayarSPP('${s.id}', '${b.key}')" title="Menunggak ${b.label} - Klik untuk Bayar"
+                    class="w-7 h-7 rounded-lg bg-rose-100 hover:bg-rose-200 border border-rose-300 text-rose-700 inline-flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-[11px]"></i>
+                  </button>
+                </td>
+              `;
+            } else {
+              return `
+                <td class="py-2 px-1 text-center">
+                  <button type="button" onclick="quickBayarSPP('${s.id}', '${b.key}')" title="Bayar di muka (${b.label})"
+                    class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-emerald-100 border border-slate-200 text-slate-400 hover:text-emerald-700 inline-flex items-center justify-center transition">
+                    <i class="fa-solid fa-minus text-[10px]"></i>
+                  </button>
+                </td>
+              `;
+            }
+          }).join('');
+
+          return `
+            <tr class="hover:bg-emerald-50/40 transition">
+              <td class="py-2.5 px-3 sticky left-0 bg-white z-10 border-r border-slate-100">
+                <div class="font-bold text-slate-900">${s.nama}</div>
+                <div class="text-[11px] text-slate-500">NIS: ${s.nis} • <span class="font-semibold text-madrasah-700">${s.kelas}</span></div>
+              </td>
+              <td class="py-2.5 px-2 text-right font-semibold text-slate-700 whitespace-nowrap">
+                ${s.tarif === 0 ? '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px]">Beasiswa</span>' : formatRupiah(s.tarif)}
+              </td>
+              ${cells}
+              <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                <button type="button" onclick="quickBayarSPP('${s.id}')" class="px-2 py-1 rounded-lg bg-madrasah-50 hover:bg-madrasah-600 text-madrasah-700 hover:text-white font-bold text-[11px] border border-madrasah-200 transition">
+                  + Bayar
+                </button>
+                <button type="button" onclick="openKwitansiTunggakan('${s.id}')" title="Cetak Kwitansi / Tunggakan" class="px-2 py-1 rounded-lg bg-amber-50 hover:bg-amber-500 text-amber-800 hover:text-emerald-950 font-bold text-[11px] border border-amber-200 transition ml-1">
+                  <i class="fa-solid fa-receipt"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (tunggakanTbody) {
+        const tunggakanRows = [];
+        students.forEach(s => {
+          const listBulan = BULAN_TA.filter(b => b.jatuhTempo && (!s.payments || !s.payments[b.key]));
+          if (listBulan.length > 0 && s.tarif > 0) {
+            const total = listBulan.length * s.tarif;
+            tunggakanRows.push(`
+              <tr class="hover:bg-rose-50/40">
+                <td class="py-3 px-4">
+                  <div class="font-bold text-slate-900">${s.nama}</div>
+                  <div class="text-xs text-slate-500">NIS: ${s.nis} • Wali: ${s.wali}</div>
+                </td>
+                <td class="py-3 px-4 font-semibold text-slate-700">${s.kelas}</td>
+                <td class="py-3 px-4">
+                  <div class="flex flex-wrap gap-1">
+                    ${listBulan.map(b => `<span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[11px] font-semibold">${b.short}</span>`).join('')}
+                  </div>
+                </td>
+                <td class="py-3 px-4 text-right font-extrabold text-rose-700">${formatRupiah(total)}</td>
+                <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <button type="button" onclick="quickBayarSPP('${s.id}', '${listBulan[0].key}')" class="px-3 py-1.5 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-xs font-bold transition">
+                    Lunasi
+                  </button>
+                  <button type="button" onclick="openKwitansiTunggakan('${s.id}')" class="px-2.5 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition ml-1">
+                    <i class="fa-solid fa-receipt mr-1"></i>Kwitansi
+                  </button>
+                </td>
+              </tr>
+            `);
+          }
+        });
+        tunggakanTbody.innerHTML = tunggakanRows.length > 0
+          ? tunggakanRows.join('')
+          : `<tr><td colspan="5" class="py-8 text-center text-slate-500 text-sm">Alhamdulillah, tidak ada tunggakan SPP pada filter yang dipilih.</td></tr>`;
+      }
+
+      if (masterTbody) {
+        masterTbody.innerHTML = students.map(s => `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-4 font-mono text-xs text-slate-600">${s.nis}</td>
+            <td class="py-3 px-4 font-bold text-slate-900">${s.nama}</td>
+            <td class="py-3 px-4 font-semibold text-madrasah-700">${s.kelas}</td>
+            <td class="py-3 px-4 text-slate-600">${s.wali}</td>
+            <td class="py-3 px-4">
+              <span class="px-2.5 py-1 rounded-lg text-xs font-semibold ${s.status === 'Reguler' ? 'bg-slate-100 text-slate-700' : 'bg-amber-100 text-amber-800'}">${s.status}</span>
+            </td>
+            <td class="py-3 px-4 text-right font-bold text-slate-800">${formatRupiah(s.tarif)}</td>
+            <td class="py-3 px-4 text-center">
+              <button type="button" onclick="hapusSiswa('${s.id}')" title="Hapus Data Siswa" class="p-2 rounded-lg text-rose-500 hover:bg-rose-50 transition">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function populateFormBayarSPP(selectedStudentId = null, selectedMonthKey = null) {
+      const selectSiswa = document.getElementById('form-spp-siswa');
+      selectSiswa.innerHTML = appState.students.map(s =>
+        `<option value="${s.id}" ${s.id === selectedStudentId ? 'selected' : ''}>${s.nis} - ${s.nama} (${s.kelas})</option>`
+      ).join('');
+
+      const selectBulan = document.getElementById('form-spp-bulan');
+      selectBulan.innerHTML = BULAN_TA.map(b =>
+        `<option value="${b.key}" ${b.key === selectedMonthKey ? 'selected' : ''}>${b.label}</option>`
+      ).join('');
+
+      document.getElementById('form-spp-tanggal').value = '2026-11-24';
+      updateFormSppDetail();
+    }
+
+    function updateFormSppDetail() {
+      const sid = document.getElementById('form-spp-siswa').value;
+      const siswa = appState.students.find(s => s.id === sid);
+      if (!siswa) return;
+
+      document.getElementById('form-spp-status-label').textContent = siswa.status;
+      document.getElementById('form-spp-tarif-label').textContent = formatRupiah(siswa.tarif);
+      document.getElementById('form-spp-nominal').value = siswa.tarif;
+
+      const selectBulan = document.getElementById('form-spp-bulan');
+      const unpaid = BULAN_TA.find(b => !siswa.payments || !siswa.payments[b.key]);
+      if (unpaid && !selectBulan.dataset.locked) {
+        selectBulan.value = unpaid.key;
+      }
+    }
+
+    function quickBayarSPP(studentId, monthKey = null) {
+      openModal('modal-bayar-spp');
+      const selectBulan = document.getElementById('form-spp-bulan');
+      if (monthKey) selectBulan.dataset.locked = 'true';
+      else delete selectBulan.dataset.locked;
+      populateFormBayarSPP(studentId, monthKey);
+      delete selectBulan.dataset.locked;
+    }
+
+    async function handleBayarSPP(e) {
+      e.preventDefault();
+      const sid = document.getElementById('form-spp-siswa').value;
+      const bulanKey = document.getElementById('form-spp-bulan').value;
+      const tanggal = document.getElementById('form-spp-tanggal').value;
+      const metode = document.getElementById('form-spp-metode').value;
+      const nominal = Number(document.getElementById('form-spp-nominal').value) || 0;
+      const autoKwitansi = document.getElementById('form-spp-auto-kwitansi').checked;
+
+      const siswa = appState.students.find(s => s.id === sid);
+      const bulanObj = BULAN_TA.find(b => b.key === bulanKey);
+      if (!siswa || !bulanObj) return;
+
+      if (siswa.payments && siswa.payments[bulanKey]) {
+        showToast(`SPP ${siswa.nama} bulan ${bulanObj.label} sudah tercatat LUNAS sebelumnya.`, 'warning');
+        return;
+      }
+
+      setSyncOverlay(true, 'Menyimpan pembayaran SPP ke Google Sheets...');
+      try {
+        const res = await callServer('savePaymentSPP', {
+          studentId: sid,
+          bulanKey: bulanKey,
+          bulanLabel: bulanObj.label,
+          tanggal: tanggal,
+          metode: metode,
+          nominal: nominal
+        });
+
+        if (!res || !res.ok) {
+          throw new Error(res && res.message ? res.message : 'Gagal menyimpan pembayaran SPP.');
+        }
+
+        const nomorKwitansi = res.noKwitansi || ('KWT/MANWS/2026/' + String(appState.bku.length + 101));
+        if (!siswa.payments) siswa.payments = {};
+        siswa.payments[bulanKey] = { noKwitansi: nomorKwitansi, tanggal, nominal, metode };
+
+        if (nominal > 0) {
+          appState.bku.push({
+            id: res.bkuId || ('BKU' + Date.now()),
+            tanggal,
+            noBukti: nomorKwitansi,
+            kodePos: '4.2.01',
+            uraian: `Pembayaran SPP ${bulanObj.label} a.n. ${siswa.nama} (${siswa.kelas})`,
+            sumber: 'SPP & Komite',
+            metode,
+            jenis: 'masuk',
+            nominal
+          });
+        }
+
+        saveLocalCache(appState);
+        closeModal('modal-bayar-spp');
+        refreshAllViews();
+        showToast(`Pembayaran SPP ${siswa.nama} (${bulanObj.label}) berhasil disimpan!`);
+
+        if (autoKwitansi) showKwitansi(sid, bulanKey);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    function showKwitansi(studentId, monthKey) {
+      const siswa = appState.students.find(s => s.id === studentId);
+      const bulanObj = BULAN_TA.find(b => b.key === monthKey);
+      if (!siswa || !siswa.payments || !siswa.payments[monthKey]) return;
+
+      const pay = siswa.payments[monthKey];
+      const box = document.getElementById('kwitansi-preview-box');
+
+      box.innerHTML = `
+        <div class="border-2 border-madrasah-800 rounded-xl p-5 sm:p-6 relative overflow-hidden">
+          <div class="flex items-center justify-between border-b-2 border-madrasah-800 pb-3 mb-4 gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-14 h-14 rounded-xl flex items-center justify-center shrink-0">
+                <img src="${appState.settings.logoUrl || DEFAULT_LOGO_MA_NW_SUELA}" alt="Logo ${appState.settings.namaSingkat}" class="w-full h-full object-contain" />
+              </div>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-madrasah-700">${appState.settings.yayasan || 'YAYASAN PONDOK PESANTREN NURUL HIDAYAH WAL ISTIQOMAH'}</p>
+                <h4 class="font-extrabold text-sm sm:text-base uppercase text-madrasah-950">${appState.settings.namaMadrasah} (${appState.settings.namaSingkat})</h4>
+                <p class="text-[11px] text-slate-600">${appState.settings.alamat}</p>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase tracking-wider">LUNAS</span>
+              <p class="text-[11px] font-mono text-slate-500 mt-1">No: ${pay.noKwitansi}</p>
+            </div>
+          </div>
+
+          <h3 class="text-center font-extrabold text-base uppercase tracking-wide underline mb-4 text-slate-900">BUKTI PEMBAYARAN SPP / SYAHRIAH SISWA</h3>
+
+          <table class="w-full text-xs sm:text-sm mb-4">
+            <tbody>
+              <tr>
+                <td class="py-1.5 text-slate-500 w-40">Telah Terima Dari</td>
+                <td class="py-1.5 font-semibold text-slate-900">: ${siswa.wali} (Wali Murid)</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-slate-500">Nama Siswa / NIS</td>
+                <td class="py-1.5 font-bold text-slate-900">: ${siswa.nama} (${siswa.nis})</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-slate-500">Kelas / Tahun Ajaran</td>
+                <td class="py-1.5 font-semibold text-slate-900">: ${siswa.kelas} • TA 2026/2027</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-slate-500">Untuk Pembayaran</td>
+                <td class="py-1.5 font-bold text-madrasah-800">: Iuran SPP / Syahriah Bulan ${bulanObj.label}</td>
+              </tr>
+              <tr>
+                <td class="py-1.5 text-slate-500">Metode & Tanggal</td>
+                <td class="py-1.5 text-slate-800">: ${pay.metode} • ${formatTanggalIndo(pay.tanggal)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-3.5 flex items-center justify-between mb-6">
+            <span class="text-xs font-bold uppercase text-emerald-900">Jumlah Nominal Diterima:</span>
+            <span class="text-lg sm:text-xl font-extrabold text-madrasah-900">${formatRupiah(pay.nominal)}</span>
+          </div>
+
+          <div class="flex justify-between items-end text-xs text-center pt-2">
+            <div class="text-left text-[11px] text-slate-500 max-w-xs">
+              <p>* Simpan kwitansi ini sebagai bukti pembayaran sah administrasi ${appState.settings.namaSingkat}.</p>
+              <p>* Dicetak melalui Sistem Administrasi Bendahara ${appState.settings.namaSingkat}.</p>
+            </div>
+            <div>
+              <p class="text-slate-600">${appState.settings.kota}, ${formatTanggalIndo(pay.tanggal)}</p>
+              <p class="font-bold text-slate-900">Bendahara ${appState.settings.namaSingkat},</p>
+              <div class="h-14"></div>
+              <p class="font-bold underline">${appState.settings.bendaharaNama}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      openModal('modal-kwitansi');
+    }
+
+    function populateKwitansiSPPModal(selectedStudentId = null, mode = 'tunggakan', selectedMonthKey = null) {
+      const selSiswa = document.getElementById('kwt-spp-siswa');
+      const selMode = document.getElementById('kwt-spp-mode');
+      const selBulan = document.getElementById('kwt-spp-bulan');
+      if (!selSiswa || !selMode || !selBulan) return;
+
+      selSiswa.innerHTML = appState.students.map(s =>
+        `<option value="${s.id}" ${s.id === selectedStudentId ? 'selected' : ''}>${s.nis} - ${s.nama} (${s.kelas})</option>`
+      ).join('');
+
+      selBulan.innerHTML = BULAN_TA.map(b =>
+        `<option value="${b.key}" ${b.key === selectedMonthKey ? 'selected' : ''}>${b.label}</option>`
+      ).join('');
+
+      if (mode) selMode.value = mode;
+      renderCustomKwitansiSPP();
+    }
+
+    function openKwitansiTunggakan(studentId) {
+      openModal('modal-kwitansi-spp');
+      populateKwitansiSPPModal(studentId, 'tunggakan', null);
+    }
+
+    function renderCustomKwitansiSPP() {
+      const mode = document.getElementById('kwt-spp-mode')?.value || 'tunggakan';
+      const sid = document.getElementById('kwt-spp-siswa')?.value;
+      const monthKey = document.getElementById('kwt-spp-bulan')?.value;
+      const bulanWrap = document.getElementById('kwt-spp-bulan-wrap');
+      const box = document.getElementById('kwt-spp-custom-box');
+      if (!box) return;
+
+      const siswa = appState.students.find(s => s.id === sid) || appState.students[0];
+      if (!siswa) {
+        box.innerHTML = `<p class="text-sm text-slate-500 text-center py-6">Data siswa tidak tersedia.</p>`;
+        return;
+      }
+
+      const kopHtml = `
+        <div class="flex items-center justify-between border-b-2 border-madrasah-800 pb-3 mb-4 gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center shrink-0">
+              <img src="${appState.settings.logoUrl || DEFAULT_LOGO_MA_NW_SUELA}" alt="Logo ${appState.settings.namaSingkat}" class="w-full h-full object-contain" />
+            </div>
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-wider text-madrasah-700">${appState.settings.yayasan || 'YAYASAN PONDOK PESANTREN NURUL HIDAYAH WAL ISTIQOMAH'}</p>
+              <h4 class="font-extrabold text-sm sm:text-base uppercase text-madrasah-950">${appState.settings.namaMadrasah} (${appState.settings.namaSingkat})</h4>
+              <p class="text-[11px] text-slate-600">${appState.settings.alamat}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (mode === 'pembayaran') {
+        if (bulanWrap) bulanWrap.classList.remove('hidden');
+        const bulanObj = BULAN_TA.find(b => b.key === monthKey) || BULAN_TA[0];
+        const pay = siswa.payments && siswa.payments[bulanObj.key];
+
+        if (!pay) {
+          box.innerHTML = `
+            <div class="border-2 border-amber-400 bg-amber-50/50 rounded-xl p-6 text-center space-y-3">
+              <p class="text-sm font-bold text-amber-900">SPP ${siswa.nama} untuk bulan ${bulanObj.label} belum tercatat LUNAS.</p>
+              <p class="text-xs text-slate-600">Silakan catat pembayaran terlebih dahulu atau beralih ke mode Kwitansi / Rincian Tunggakan.</p>
+              <button type="button" onclick="closeModal('modal-kwitansi-spp'); quickBayarSPP('${siswa.id}', '${bulanObj.key}');" class="px-4 py-2 rounded-xl bg-madrasah-600 hover:bg-madrasah-700 text-white text-xs font-bold">
+                Input Pembayaran ${bulanObj.label}
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        box.innerHTML = `
+          <div class="border-2 border-madrasah-800 rounded-xl p-5 sm:p-6">
+            ${kopHtml}
+            <div class="flex justify-end mb-2">
+              <span class="px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 text-xs font-extrabold uppercase">LUNAS • No: ${pay.noKwitansi}</span>
+            </div>
+            <h3 class="text-center font-extrabold text-base uppercase underline mb-4 text-slate-900">KWITANSI PEMBAYARAN SPP / SYAHRIAH SISWA</h3>
+            <table class="w-full text-xs sm:text-sm mb-4">
+              <tbody>
+                <tr><td class="py-1 text-slate-500 w-40">Telah Terima Dari</td><td class="py-1 font-semibold">: ${siswa.wali}</td></tr>
+                <tr><td class="py-1 text-slate-500">Nama Siswa / NIS</td><td class="py-1 font-bold">: ${siswa.nama} (${siswa.nis})</td></tr>
+                <tr><td class="py-1 text-slate-500">Kelas</td><td class="py-1 font-semibold">: ${siswa.kelas}</td></tr>
+                <tr><td class="py-1 text-slate-500">Pembayaran Bulan</td><td class="py-1 font-bold text-madrasah-800">: ${bulanObj.label}</td></tr>
+                <tr><td class="py-1 text-slate-500">Metode & Tanggal</td><td class="py-1">: ${pay.metode} • ${formatTanggalIndo(pay.tanggal)}</td></tr>
+              </tbody>
+            </table>
+            <div class="bg-emerald-50 border border-emerald-300 rounded-xl p-3.5 flex items-center justify-between mb-6">
+              <span class="text-xs font-bold uppercase text-emerald-900">Jumlah Diterima:</span>
+              <span class="text-lg font-extrabold text-madrasah-900">${formatRupiah(pay.nominal)}</span>
+            </div>
+            <div class="flex justify-end text-xs text-center">
+              <div>
+                <p class="text-slate-600">${appState.settings.kota}, ${formatTanggalIndo(pay.tanggal)}</p>
+                <p class="font-bold text-slate-900">Bendahara ${appState.settings.namaSingkat},</p>
+                <div class="h-14"></div>
+                <p class="font-bold underline">${appState.settings.bendaharaNama}</p>
+              </div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (bulanWrap) bulanWrap.classList.add('hidden');
+      const tunggakList = BULAN_TA.filter(b => b.jatuhTempo && (!siswa.payments || !siswa.payments[b.key]));
+      const totalTunggakan = siswa.tarif > 0 ? tunggakList.length * siswa.tarif : 0;
+
+      box.innerHTML = `
+        <div class="border-2 border-amber-700 rounded-xl p-5 sm:p-6">
+          ${kopHtml}
+          <div class="flex justify-end mb-2">
+            <span class="px-2.5 py-1 rounded ${totalTunggakan > 0 ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'} text-xs font-extrabold uppercase">
+              ${totalTunggakan > 0 ? 'TAGIHAN TUNGGAKAN SPP' : 'TIDAK MENUNGGAK'}
+            </span>
+          </div>
+          <h3 class="text-center font-extrabold text-base uppercase underline mb-4 text-slate-900">KWITANSI / RINCIAN TUNGGAKAN SPP SISWA</h3>
+          <table class="w-full text-xs sm:text-sm mb-4">
+            <tbody>
+              <tr><td class="py-1 text-slate-500 w-40">Nama Siswa / NIS</td><td class="py-1 font-bold">: ${siswa.nama} (${siswa.nis})</td></tr>
+              <tr><td class="py-1 text-slate-500">Kelas / Status</td><td class="py-1 font-semibold">: ${siswa.kelas} • ${siswa.status}</td></tr>
+              <tr><td class="py-1 text-slate-500">Nama Wali Murid</td><td class="py-1 font-semibold">: ${siswa.wali}</td></tr>
+              <tr><td class="py-1 text-slate-500">Tarif SPP / Bulan</td><td class="py-1 font-semibold">: ${formatRupiah(siswa.tarif)}</td></tr>
+              <tr>
+                <td class="py-1 text-slate-500 align-top">Bulan Menunggak</td>
+                <td class="py-1 font-bold text-rose-700">: ${siswa.tarif === 0 ? 'Bebas Biaya (Beasiswa)' : (tunggakList.length > 0 ? tunggakList.map(b => b.label).join(', ') : 'Lunas semua bulan jatuh tempo')}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="bg-rose-50 border border-rose-300 rounded-xl p-3.5 flex items-center justify-between mb-6">
+            <span class="text-xs font-bold uppercase text-rose-900">Total Tunggakan SPP:</span>
+            <span class="text-lg sm:text-xl font-extrabold text-rose-800">${formatRupiah(totalTunggakan)}</span>
+          </div>
+          <div class="flex justify-between items-end text-xs text-center">
+            <div class="text-left text-[11px] text-slate-500 max-w-xs">
+              <p>* Harap melakukan penyelesaian administrasi SPP ke bagian Bendahara ${appState.settings.namaSingkat}.</p>
+            </div>
+            <div>
+              <p class="text-slate-600">${appState.settings.kota}, 24 November 2026</p>
+              <p class="font-bold text-slate-900">Bendahara ${appState.settings.namaSingkat},</p>
+              <div class="h-14"></div>
+              <p class="font-bold underline">${appState.settings.bendaharaNama}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function autoTarifSiswaBaru() {
+      const st = document.getElementById('new-siswa-status').value;
+      const input = document.getElementById('new-siswa-tarif');
+      if (st === 'Beasiswa Yatim') input.value = 0;
+      else if (st === 'Keringanan 50%') input.value = 75000;
+      else input.value = 150000;
+    }
+
+    async function handleTambahSiswa(e) {
+      e.preventDefault();
+      const newStudent = {
+        id: 'S' + Date.now(),
+        nis: document.getElementById('new-siswa-nis').value.trim(),
+        nama: document.getElementById('new-siswa-nama').value.trim(),
+        kelas: document.getElementById('new-siswa-kelas').value,
+        wali: document.getElementById('new-siswa-wali').value.trim(),
+        status: document.getElementById('new-siswa-status').value,
+        tarif: Number(document.getElementById('new-siswa-tarif').value) || 0,
+        payments: {}
+      };
+
+      setSyncOverlay(true, 'Menyimpan siswa ke Google Sheets...');
+      try {
+        const res = await callServer('addStudent', newStudent);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal menambah siswa.');
+
+        appState.students.push(newStudent);
+        saveLocalCache(appState);
+        closeModal('modal-tambah-siswa');
+        e.target.reset();
+        refreshAllViews();
+        showToast(`Data siswa ${newStudent.nama} (${newStudent.kelas}) tersimpan.`);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    async function hapusSiswa(id) {
+      setSyncOverlay(true, 'Menghapus data siswa...');
+      try {
+        const res = await callServer('deleteStudent', id);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal menghapus siswa.');
+
+        appState.students = appState.students.filter(s => s.id !== id);
+        saveLocalCache(appState);
+        refreshAllViews();
+        showToast('Data siswa berhasil dihapus.', 'warning');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    function populateFormBKU() {
+      document.getElementById('bku-form-tanggal').value = '2026-11-24';
+      const posSelect = document.getElementById('bku-form-pos');
+      posSelect.innerHTML = appState.rkam.map(r =>
+        `<option value="${r.kode}">${r.kode} — ${r.nama}</option>`
+      ).join('');
+      toggleBkuPosSelect();
+    }
+
+    function toggleBkuPosSelect() {
+      const jenis = document.getElementById('bku-form-jenis').value;
+      const wrap = document.getElementById('bku-form-pos-wrapper');
+      wrap.style.display = jenis === 'keluar' ? 'block' : 'none';
+    }
+
+    async function handleTambahBKU(e) {
+      e.preventDefault();
+      const jenis = document.getElementById('bku-form-jenis').value;
+      const tanggal = document.getElementById('bku-form-tanggal').value;
+      const sumber = document.getElementById('bku-form-sumber').value;
+      const metode = document.getElementById('bku-form-metode').value;
+      const pos = jenis === 'keluar' ? document.getElementById('bku-form-pos').value : '4.1.00';
+      const uraian = document.getElementById('bku-form-uraian').value.trim();
+      const nominal = Number(document.getElementById('bku-form-nominal').value) || 0;
+
+      const prefix = jenis === 'masuk' ? 'BKM' : 'BKK';
+      const fallbackBukti = `${prefix}/${sumber === 'Dana BOS' ? 'BOS' : 'MDR'}/${String(appState.bku.length + 1).padStart(3, '0')}`;
+
+      const txPayload = {
+        id: 'BKU' + Date.now(),
+        tanggal,
+        noBukti: fallbackBukti,
+        kodePos: pos,
+        uraian,
+        sumber,
+        metode,
+        jenis,
+        nominal
+      };
+
+      setSyncOverlay(true, 'Menyimpan transaksi BKU ke Google Sheets...');
+      try {
+        const res = await callServer('addBKUTransaction', txPayload);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal menyimpan BKU.');
+
+        if (res.noBukti) txPayload.noBukti = res.noBukti;
+        appState.bku.push(txPayload);
+        saveLocalCache(appState);
+        closeModal('modal-transaksi-bku');
+        e.target.reset();
+        refreshAllViews();
+        showToast('Transaksi BKU berhasil disimpan ke Google Sheets.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    async function hapusBKU(id) {
+      setSyncOverlay(true, 'Menghapus transaksi BKU...');
+      try {
+        const res = await callServer('deleteBKUTransaction', id);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal menghapus BKU.');
+
+        appState.bku = appState.bku.filter(b => b.id !== id);
+        saveLocalCache(appState);
+        refreshAllViews();
+        showToast('Baris transaksi BKU telah dihapus.', 'warning');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    function renderBKU() {
+      const fBulan = document.getElementById('filter-bku-bulan').value;
+      const fSumber = document.getElementById('filter-bku-sumber').value;
+      const fJenis = document.getElementById('filter-bku-jenis').value;
+      const fSearch = document.getElementById('filter-bku-search').value.toLowerCase();
+
+      const chronological = [...appState.bku].sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
+      let runningSaldo = 0;
+      const withSaldo = chronological.map(item => {
+        const nom = Number(item.nominal) || 0;
+        if (item.jenis === 'masuk') runningSaldo += nom;
+        else runningSaldo -= nom;
+        return { ...item, saldoBerjalan: runningSaldo };
+      });
+
+      const filtered = withSaldo.filter(item => {
+        const mBulan = fBulan === 'ALL' || String(item.tanggal).startsWith(fBulan);
+        const mSumber = fSumber === 'ALL' || item.sumber === fSumber;
+        const mJenis = fJenis === 'ALL' || item.jenis === fJenis;
+        const mSearch = String(item.uraian).toLowerCase().includes(fSearch) || String(item.noBukti).toLowerCase().includes(fSearch);
+        return mBulan && mSumber && mJenis && mSearch;
+      });
+
+      let sumDebit = 0;
+      let sumKredit = 0;
+      const tbody = document.getElementById('bku-tbody');
+
+      tbody.innerHTML = filtered.map(t => {
+        if (t.jenis === 'masuk') sumDebit += Number(t.nominal);
+        else sumKredit += Number(t.nominal);
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-4 whitespace-nowrap text-xs font-medium text-slate-700">${formatTanggalIndo(t.tanggal)}</td>
+            <td class="py-3 px-4 font-mono text-xs text-slate-600 whitespace-nowrap">${t.noBukti}</td>
+            <td class="py-3 px-4 font-mono text-xs text-madrasah-700 font-bold">${t.kodePos}</td>
+            <td class="py-3 px-4 font-medium text-slate-800">${t.uraian}</td>
+            <td class="py-3 px-4">
+              <div class="text-xs font-bold text-slate-700">${t.sumber}</div>
+              <div class="text-[11px] text-slate-400">${t.metode}</div>
+            </td>
+            <td class="py-3 px-4 text-right font-bold text-emerald-700 whitespace-nowrap">
+              ${t.jenis === 'masuk' ? formatRupiah(t.nominal) : '-'}
+            </td>
+            <td class="py-3 px-4 text-right font-bold text-rose-600 whitespace-nowrap">
+              ${t.jenis === 'keluar' ? formatRupiah(t.nominal) : '-'}
+            </td>
+            <td class="py-3 px-4 text-right font-extrabold text-slate-900 whitespace-nowrap">
+              ${formatRupiah(t.saldoBerjalan)}
+            </td>
+            <td class="py-3 px-3 text-center">
+              <button type="button" onclick="hapusBKU('${t.id}')" title="Hapus Transaksi" class="p-1.5 text-slate-400 hover:text-rose-600 transition">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="py-8 text-center text-slate-500 text-sm">Tidak ada transaksi BKU yang sesuai dengan filter.</td></tr>`;
+      }
+
+      document.getElementById('bku-foot-debit').textContent = formatRupiah(sumDebit);
+      document.getElementById('bku-foot-kredit').textContent = formatRupiah(sumKredit);
+      document.getElementById('bku-foot-saldo').textContent = formatRupiah(runningSaldo);
+    }
+
+    function renderRKAM() {
+      let totalPagu = 0;
+      let totalRealisasi = 0;
+
+      const grid = document.getElementById('rkam-cards-grid');
+      grid.innerHTML = appState.rkam.map(pos => {
+        const realisasi = appState.bku
+          .filter(b => b.jenis === 'keluar' && b.kodePos === pos.kode)
+          .reduce((acc, cur) => acc + Number(cur.nominal), 0);
+
+        const sisa = pos.pagu - realisasi;
+        const persen = pos.pagu > 0 ? Math.min(100, Math.round((realisasi / pos.pagu) * 100)) : 0;
+
+        totalPagu += Number(pos.pagu);
+        totalRealisasi += realisasi;
+
+        const barColor = persen > 90 ? 'bg-rose-500' : persen > 70 ? 'bg-amber-500' : 'bg-madrasah-600';
+
+        return `
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="px-2.5 py-1 rounded-lg bg-madrasah-50 text-madrasah-800 font-mono text-xs font-extrabold border border-madrasah-200">Kode ${pos.kode}</span>
+                <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">${pos.sumber}</span>
+              </div>
+              <h4 class="font-bold text-base text-slate-900 mb-4">${pos.nama}</h4>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-500">Serapan: <strong class="text-slate-800">${persen}%</strong></span>
+                <span class="text-slate-700">${formatRupiah(realisasi)} / ${formatRupiah(pos.pagu)}</span>
+              </div>
+              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-3">
+                <div class="${barColor} h-full rounded-full transition-all duration-500" style="width: ${persen}%"></div>
+              </div>
+              <div class="flex justify-between items-center pt-2.5 border-t border-slate-100 text-xs">
+                <span class="text-slate-500">Sisa Anggaran Tersedia:</span>
+                <span class="font-extrabold ${sisa < 0 ? 'text-rose-600' : 'text-emerald-700'}">${formatRupiah(sisa)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const persenTotal = totalPagu > 0 ? Math.round((totalRealisasi / totalPagu) * 100) : 0;
+      document.getElementById('rkam-total-pagu').textContent = formatRupiah(totalPagu);
+      document.getElementById('rkam-total-realisasi').textContent = formatRupiah(totalRealisasi);
+      document.getElementById('rkam-persen-serapan').textContent = `Serapan Anggaran: ${persenTotal}%`;
+      document.getElementById('rkam-total-sisa').textContent = formatRupiah(totalPagu - totalRealisasi);
+    }
+
+    async function handleTambahRKAM(e) {
+      e.preventDefault();
+      const newPos = {
+        kode: document.getElementById('rkam-new-kode').value.trim(),
+        nama: document.getElementById('rkam-new-nama').value.trim(),
+        sumber: document.getElementById('rkam-new-sumber').value,
+        pagu: Number(document.getElementById('rkam-new-pagu').value) || 0
+      };
+
+      setSyncOverlay(true, 'Menyimpan pos RKAM ke Google Sheets...');
+      try {
+        const res = await callServer('addRKAMPos', newPos);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal menambah RKAM.');
+
+        appState.rkam.push(newPos);
+        saveLocalCache(appState);
+        closeModal('modal-tambah-rkam');
+        e.target.reset();
+        refreshAllViews();
+        showToast(`Pos anggaran ${newPos.kode} berhasil disimpan ke Google Sheets.`);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    function renderPajakDanKas() {
+      let tunaiMasuk = 0, tunaiKeluar = 0, bankMasuk = 0, bankKeluar = 0;
+      appState.bku.forEach(t => {
+        const nom = Number(t.nominal) || 0;
+        if (t.metode === 'Tunai') {
+          if (t.jenis === 'masuk') tunaiMasuk += nom;
+          else tunaiKeluar += nom;
+        } else {
+          if (t.jenis === 'masuk') bankMasuk += nom;
+          else bankKeluar += nom;
+        }
+      });
+
+      document.getElementById('kas-tunai-masuk').textContent = formatRupiah(tunaiMasuk);
+      document.getElementById('kas-tunai-keluar').textContent = formatRupiah(tunaiKeluar);
+      document.getElementById('kas-tunai-saldo').textContent = formatRupiah(tunaiMasuk - tunaiKeluar);
+
+      document.getElementById('kas-bank-masuk').textContent = formatRupiah(bankMasuk);
+      document.getElementById('kas-bank-keluar').textContent = formatRupiah(bankKeluar);
+      const bankSaldoEl = document.getElementById('kas-bank-saldo');
+      if (bankSaldoEl) bankSaldoEl.textContent = formatRupiah(bankMasuk - bankKeluar);
+
+      document.getElementById('pajak-tbody').innerHTML = appState.pajak.map(p => {
+        const isSetor = p.status === 'Sudah Disetor';
+        return `
+          <tr class="hover:bg-slate-50">
+            <td class="py-3 px-4 text-xs font-medium text-slate-700 whitespace-nowrap">${formatTanggalIndo(p.tanggal)}</td>
+            <td class="py-3 px-4 font-bold text-slate-900">${p.jenis}</td>
+            <td class="py-3 px-4 text-slate-700">${p.uraian}</td>
+            <td class="py-3 px-4 font-mono text-xs text-slate-500">${p.ntpn || '-'}</td>
+            <td class="py-3 px-4 text-right font-semibold text-slate-800">${formatRupiah(p.nominal)}</td>
+            <td class="py-3 px-4 text-right font-semibold text-emerald-700">${isSetor ? formatRupiah(p.nominal) : 'Rp 0'}</td>
+            <td class="py-3 px-4 text-center">
+              ${isSetor
+                ? `<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">Sudah Disetor</span>`
+                : `<button type="button" onclick="setorPajak('${p.id}')" class="px-2.5 py-1 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition">Tandai Setor</button>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function handleTambahPajak(e) {
+      e.preventDefault();
+      const newPajak = {
+        id: 'PJK' + Date.now(),
+        tanggal: document.getElementById('pajak-new-tanggal').value,
+        jenis: document.getElementById('pajak-new-jenis').value,
+        uraian: document.getElementById('pajak-new-uraian').value.trim(),
+        nominal: Number(document.getElementById('pajak-new-nominal').value) || 0,
+        status: document.getElementById('pajak-new-status').value,
+        ntpn: document.getElementById('pajak-new-ntpn').value.trim() || '-'
+      };
+
+      setSyncOverlay(true, 'Menyimpan data pajak ke Google Sheets...');
+      try {
+        const res = await callServer('addPajakRecord', newPajak);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal menyimpan pajak.');
+
+        appState.pajak.push(newPajak);
+        saveLocalCache(appState);
+        closeModal('modal-tambah-pajak');
+        e.target.reset();
+        refreshAllViews();
+        showToast('Catatan pajak berhasil disimpan ke Google Sheets.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    async function setorPajak(id) {
+      const item = appState.pajak.find(p => p.id === id);
+      if (!item) return;
+      const ntpnBaru = 'NTPN-' + Math.floor(100000000 + Math.random() * 900000000);
+
+      setSyncOverlay(true, 'Memperbarui status setoran pajak...');
+      try {
+        const res = await callServer('markPajakSetor', id, ntpnBaru);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal memperbarui pajak.');
+
+        item.status = 'Sudah Disetor';
+        item.ntpn = ntpnBaru;
+        saveLocalCache(appState);
+        refreshAllViews();
+        showToast('Status pajak diperbarui menjadi Sudah Disetor.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    function renderLPJ() {
+      const periode = document.getElementById('lpj-periode-select').value;
+      const bulanObj = BULAN_TA.find(b => b.key === periode);
+      document.getElementById('lpj-judul-periode').textContent = bulanObj ? bulanObj.label : 'Semester Ganjil (Juli – November 2026)';
+
+      document.getElementById('lpj-kop-logo').src = appState.settings.logoUrl || DEFAULT_LOGO_MA_NW_SUELA;
+      document.getElementById('lpj-kop-yayasan').textContent = (appState.settings.yayasan || 'YAYASAN PONDOK PESANTREN NURUL HIDAYAH WAL ISTIQOMAH').toUpperCase();
+      document.getElementById('lpj-kop-nama').textContent = `${appState.settings.namaMadrasah.toUpperCase()} (${appState.settings.namaSingkat.toUpperCase()})`;
+      document.getElementById('lpj-kop-alamat').textContent = appState.settings.alamat;
+      document.getElementById('lpj-ttd-kepala').textContent = appState.settings.kepalaNama;
+      document.getElementById('lpj-nip-kepala').textContent = appState.settings.kepalaNip;
+      document.getElementById('lpj-ttd-bendahara').textContent = appState.settings.bendaharaNama;
+      document.getElementById('lpj-nip-bendahara').textContent = appState.settings.bendaharaNip;
+      document.getElementById('lpj-tanggal-ttd').textContent = `${appState.settings.kota}, 24 November 2026`;
+
+      let saldoAwal = 0, masukPeriode = 0, keluarPeriode = 0;
+
+      appState.bku.forEach(t => {
+        const nom = Number(t.nominal) || 0;
+        const tgl = String(t.tanggal);
+        if (periode === 'ALL') {
+          if (t.jenis === 'masuk') masukPeriode += nom;
+          else keluarPeriode += nom;
+        } else {
+          if (tgl < `${periode}-01`) {
+            if (t.jenis === 'masuk') saldoAwal += nom;
+            else saldoAwal -= nom;
+          } else if (tgl.startsWith(periode)) {
+            if (t.jenis === 'masuk') masukPeriode += nom;
+            else keluarPeriode += nom;
+          }
+        }
+      });
+
+      document.getElementById('lpj-saldo-awal').textContent = formatRupiah(saldoAwal);
+      document.getElementById('lpj-total-masuk').textContent = formatRupiah(masukPeriode);
+      document.getElementById('lpj-total-keluar').textContent = formatRupiah(keluarPeriode);
+      document.getElementById('lpj-saldo-akhir').textContent = formatRupiah(saldoAwal + masukPeriode - keluarPeriode);
+
+      let tunai = 0, bank = 0;
+      appState.bku.forEach(t => {
+        const nom = Number(t.nominal) || 0;
+        if (t.metode === 'Tunai') tunai += t.jenis === 'masuk' ? nom : -nom;
+        else bank += t.jenis === 'masuk' ? nom : -nom;
+      });
+      document.getElementById('lpj-fisik-tunai').textContent = formatRupiah(tunai);
+      document.getElementById('lpj-fisik-bank').textContent = formatRupiah(bank);
+      document.getElementById('lpj-fisik-total').textContent = formatRupiah(tunai + bank);
+
+      document.getElementById('lpj-rincian-pos').innerHTML = appState.rkam.map(r => {
+        const real = appState.bku
+          .filter(t => t.jenis === 'keluar' && t.kodePos === r.kode && (periode === 'ALL' || String(t.tanggal).startsWith(periode)))
+          .reduce((acc, c) => acc + Number(c.nominal), 0);
+        return `
+          <tr>
+            <td class="p-2 font-mono font-bold">${r.kode}</td>
+            <td class="p-2">${r.nama}</td>
+            <td class="p-2 text-right font-semibold">${formatRupiah(real)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function printSection(elementId) {
+      const source = document.getElementById(elementId);
+      const printArea = document.getElementById('print-area');
+      printArea.innerHTML = source.innerHTML;
+      printArea.classList.remove('hidden');
+      window.print();
+      setTimeout(() => {
+        printArea.classList.add('hidden');
+        printArea.innerHTML = '';
+      }, 500);
+    }
+
+    function getActiveTabName() {
+      const activeSection = Array.from(document.querySelectorAll('.tab-content')).find(el => !el.classList.contains('hidden'));
+      return activeSection ? activeSection.id.replace('tab-', '') : 'dashboard';
+    }
+
+    function printCurrentMenu() {
+      printMenuReport(getActiveTabName());
+    }
+
+    function printMenuReport(menuName) {
+      const printArea = document.getElementById('print-area');
+      const kop = `
+        <div class="border-b-4 border-double border-slate-900 pb-3 mb-5 flex items-center gap-4">
+          <div class="w-16 h-16 shrink-0">
+            <img src="${appState.settings.logoUrl || DEFAULT_LOGO_MA_NW_SUELA}" alt="Logo ${appState.settings.namaSingkat}" class="w-full h-full object-contain" />
+          </div>
+          <div class="flex-1 text-center">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-700">${appState.settings.yayasan || 'YAYASAN PONDOK PESANTREN NURUL HIDAYAH WAL ISTIQOMAH'}</p>
+            <h2 class="text-lg font-extrabold uppercase text-slate-900">${appState.settings.namaMadrasah} (${appState.settings.namaSingkat})</h2>
+            <p class="text-[11px] text-slate-600">${appState.settings.alamat}</p>
+          </div>
+        </div>
+      `;
+
+      const ttd = `
+        <div class="grid grid-cols-2 gap-6 pt-6 mt-6 text-xs text-center">
+          <div>
+            <p class="text-slate-600">Mengetahui,</p>
+            <p class="font-bold text-slate-900">Kepala ${appState.settings.namaSingkat}</p>
+            <div class="h-16"></div>
+            <p class="font-bold underline">${appState.settings.kepalaNama}</p>
+            <p class="text-[11px] text-slate-600">${appState.settings.kepalaNip}</p>
+          </div>
+          <div>
+            <p class="text-slate-600">${appState.settings.kota}, 24 November 2026</p>
+            <p class="font-bold text-slate-900">Bendahara ${appState.settings.namaSingkat}</p>
+            <div class="h-16"></div>
+            <p class="font-bold underline">${appState.settings.bendaharaNama}</p>
+            <p class="text-[11px] text-slate-600">${appState.settings.bendaharaNip}</p>
+          </div>
+        </div>
+      `;
+
+      let bodyHtml = '';
+
+      if (menuName === 'lpj') {
+        printSection('lpj-document');
+        return;
+      }
+
+      if (menuName === 'dashboard') {
+        const masuk = document.getElementById('dash-total-masuk').textContent;
+        const keluar = document.getElementById('dash-total-keluar').textContent;
+        const saldo = document.getElementById('dash-saldo-akhir').textContent;
+        const tunai = document.getElementById('dash-kas-tunai').textContent;
+        const bank = document.getElementById('dash-kas-bank').textContent;
+        const sppPersen = document.getElementById('dash-spp-persen').textContent;
+        const recentRows = document.getElementById('dash-recent-bku').innerHTML;
+
+        bodyHtml = `
+          <h3 class="text-center font-extrabold text-base uppercase underline mb-4">RINGKASAN DASHBOARD KEUANGAN MADRASAH</h3>
+          <table class="w-full border border-slate-400 text-xs mb-5">
+            <tbody>
+              <tr><td class="p-2 bg-slate-50 font-semibold">Total Pemasukan</td><td class="p-2 text-right font-bold text-emerald-700">${masuk}</td></tr>
+              <tr><td class="p-2 bg-slate-50 font-semibold">Total Pengeluaran</td><td class="p-2 text-right font-bold text-rose-700">${keluar}</td></tr>
+              <tr><td class="p-2 bg-slate-50 font-semibold">Saldo Kas & Bank (Tunai: ${tunai} | Bank: ${bank})</td><td class="p-2 text-right font-extrabold">${saldo}</td></tr>
+              <tr><td class="p-2 bg-slate-50 font-semibold">Kepatuhan Pembayaran SPP Bulan Berjalan</td><td class="p-2 text-right font-bold">${sppPersen}</td></tr>
+            </tbody>
+          </table>
+          <h4 class="font-bold text-xs uppercase mb-2">Transaksi BKU Terbaru</h4>
+          <table class="w-full border border-slate-400 text-xs">
+            <thead><tr class="bg-slate-100 border-b border-slate-400"><th class="p-2 text-left">Tanggal & Bukti</th><th class="p-2 text-left">Uraian</th><th class="p-2 text-left">Sumber</th><th class="p-2 text-right">Nominal</th></tr></thead>
+            <tbody class="divide-y divide-slate-300">${recentRows}</tbody>
+          </table>
+        `;
+      } else if (menuName === 'spp') {
+        const students = getFilteredStudents();
+        const rowsHtml = students.map(s => {
+          const tunggak = BULAN_TA.filter(b => b.jatuhTempo && (!s.payments || !s.payments[b.key]));
+          const nomTunggak = s.tarif > 0 ? tunggak.length * s.tarif : 0;
+          const lunasCount = BULAN_TA.filter(b => s.payments && s.payments[b.key]).length;
+          return `
+            <tr>
+              <td class="p-2 font-mono">${s.nis}</td>
+              <td class="p-2 font-bold">${s.nama}</td>
+              <td class="p-2">${s.kelas}</td>
+              <td class="p-2">${s.status}</td>
+              <td class="p-2 text-right">${formatRupiah(s.tarif)}</td>
+              <td class="p-2 text-center">${lunasCount} bln</td>
+              <td class="p-2 text-right font-bold ${nomTunggak > 0 ? 'text-rose-700' : 'text-emerald-700'}">${formatRupiah(nomTunggak)}</td>
+            </tr>
+          `;
+        }).join('');
+
+        bodyHtml = `
+          <h3 class="text-center font-extrabold text-base uppercase underline mb-4">REKAPITULASI SPP & TUNGGAKAN SISWA</h3>
+          <table class="w-full border border-slate-400 text-xs">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-400">
+                <th class="p-2 text-left">NIS</th>
+                <th class="p-2 text-left">Nama Siswa</th>
+                <th class="p-2 text-left">Kelas</th>
+                <th class="p-2 text-left">Status</th>
+                <th class="p-2 text-right">Tarif/Bln</th>
+                <th class="p-2 text-center">Lunas</th>
+                <th class="p-2 text-right">Tunggakan</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-300">${rowsHtml}</tbody>
+          </table>
+        `;
+      } else if (menuName === 'bku') {
+        const bkuRows = document.getElementById('bku-tbody').innerHTML;
+        const footDebit = document.getElementById('bku-foot-debit').textContent;
+        const footKredit = document.getElementById('bku-foot-kredit').textContent;
+        const footSaldo = document.getElementById('bku-foot-saldo').textContent;
+
+        bodyHtml = `
+          <h3 class="text-center font-extrabold text-base uppercase underline mb-4">BUKU KAS UMUM (BKU) MADRASAH</h3>
+          <table class="w-full border border-slate-400 text-xs">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-400">
+                <th class="p-2 text-left">Tanggal</th>
+                <th class="p-2 text-left">No. Bukti</th>
+                <th class="p-2 text-left">Pos</th>
+                <th class="p-2 text-left">Uraian</th>
+                <th class="p-2 text-left">Sumber</th>
+                <th class="p-2 text-right">Debit</th>
+                <th class="p-2 text-right">Kredit</th>
+                <th class="p-2 text-right">Saldo</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-300">${bkuRows}</tbody>
+            <tfoot>
+              <tr class="bg-slate-100 font-bold border-t-2 border-slate-400">
+                <td colspan="5" class="p-2 text-right">TOTAL:</td>
+                <td class="p-2 text-right">${footDebit}</td>
+                <td class="p-2 text-right">${footKredit}</td>
+                <td class="p-2 text-right">${footSaldo}</td>
+              </tr>
+            </tfoot>
+          </table>
+        `;
+      } else if (menuName === 'rkam') {
+        const rkamRows = appState.rkam.map(pos => {
+          const real = appState.bku
+            .filter(b => b.jenis === 'keluar' && b.kodePos === pos.kode)
+            .reduce((acc, c) => acc + Number(c.nominal), 0);
+          return `
+            <tr>
+              <td class="p-2 font-mono font-bold">${pos.kode}</td>
+              <td class="p-2">${pos.nama}</td>
+              <td class="p-2">${pos.sumber}</td>
+              <td class="p-2 text-right">${formatRupiah(pos.pagu)}</td>
+              <td class="p-2 text-right">${formatRupiah(real)}</td>
+              <td class="p-2 text-right font-bold">${formatRupiah(pos.pagu - real)}</td>
+            </tr>
+          `;
+        }).join('');
+
+        bodyHtml = `
+          <h3 class="text-center font-extrabold text-base uppercase underline mb-4">RENCANA KEGIATAN & ANGGARAN MADRASAH (RKAM)</h3>
+          <table class="w-full border border-slate-400 text-xs">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-400">
+                <th class="p-2 text-left">Kode</th>
+                <th class="p-2 text-left">Nama Pos Anggaran</th>
+                <th class="p-2 text-left">Sumber Dana</th>
+                <th class="p-2 text-right">Pagu</th>
+                <th class="p-2 text-right">Realisasi</th>
+                <th class="p-2 text-right">Sisa</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-300">${rkamRows}</tbody>
+          </table>
+        `;
+      } else if (menuName === 'pajak') {
+        const tunaiSaldo = document.getElementById('kas-tunai-saldo').textContent;
+        const bankSaldo = document.getElementById('kas-bank-saldo').textContent;
+        const pajakRows = appState.pajak.map(p => `
+          <tr>
+            <td class="p-2">${formatTanggalIndo(p.tanggal)}</td>
+            <td class="p-2 font-bold">${p.jenis}</td>
+            <td class="p-2">${p.uraian}</td>
+            <td class="p-2 font-mono">${p.ntpn || '-'}</td>
+            <td class="p-2 text-right">${formatRupiah(p.nominal)}</td>
+            <td class="p-2 text-center">${p.status}</td>
+          </tr>
+        `).join('');
+
+        bodyHtml = `
+          <h3 class="text-center font-extrabold text-base uppercase underline mb-4">BUKU PEMBANTU PAJAK & REKONSILIASI KAS</h3>
+          <p class="text-xs font-bold mb-2">Saldo Fisik Brankas: ${tunaiSaldo} • Saldo Rekening Bank: ${bankSaldo}</p>
+          <table class="w-full border border-slate-400 text-xs">
+            <thead>
+              <tr class="bg-slate-100 border-b border-slate-400">
+                <th class="p-2 text-left">Tanggal</th>
+                <th class="p-2 text-left">Jenis Pajak</th>
+                <th class="p-2 text-left">Uraian</th>
+                <th class="p-2 text-left">NTPN</th>
+                <th class="p-2 text-right">Nominal</th>
+                <th class="p-2 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-300">${pajakRows}</tbody>
+          </table>
+        `;
+      }
+
+      printArea.innerHTML = `<div class="p-6 bg-white text-slate-900">${kop}${bodyHtml}${ttd}</div>`;
+      printArea.classList.remove('hidden');
+      window.print();
+      setTimeout(() => {
+        printArea.classList.add('hidden');
+        printArea.innerHTML = '';
+      }, 500);
+    }
+
+    function exportBKUCSV() {
+      const rows = [['Tanggal', 'No Bukti', 'Kode Pos', 'Uraian Transaksi', 'Sumber Dana', 'Akun Kas', 'Debit (Masuk)', 'Kredit (Keluar)']];
+      const sorted = [...appState.bku].sort((a, b) => String(a.tanggal).localeCompare(String(b.tanggal)));
+      sorted.forEach(t => {
+        rows.push([
+          t.tanggal,
+          t.noBukti,
+          t.kodePos,
+          `"${String(t.uraian).replace(/"/g, '""')}"`,
+          t.sumber,
+          t.metode,
+          t.jenis === 'masuk' ? t.nominal : 0,
+          t.jenis === 'keluar' ? t.nominal : 0
+        ]);
+      });
+      downloadCSV(rows, 'Buku_Kas_Umum_MA_NW_SUELA.csv');
+      showToast('File CSV Buku Kas Umum berhasil diunduh.');
+    }
+
+    function exportTunggakanCSV() {
+      const rows = [['NIS', 'Nama Siswa', 'Kelas', 'Wali Murid', 'Bulan Menunggak', 'Total Tunggakan (Rp)']];
+      appState.students.forEach(s => {
+        const listBulan = BULAN_TA.filter(b => b.jatuhTempo && (!s.payments || !s.payments[b.key]));
+        if (listBulan.length > 0 && s.tarif > 0) {
+          rows.push([
+            s.nis,
+            `"${s.nama}"`,
+            s.kelas,
+            `"${s.wali}"`,
+            `"${listBulan.map(b => b.short).join(', ')}"`,
+            listBulan.length * s.tarif
+          ]);
+        }
+      });
+      downloadCSV(rows, 'Rekap_Tunggakan_SPP_MA_NW_SUELA.csv');
+      showToast('File CSV Rekap Tunggakan SPP berhasil diunduh.');
+    }
+
+    function downloadCSV(rows, filename) {
+      const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    async function handleSimpanPengaturan(e) {
+      e.preventDefault();
+      appState.settings.namaSingkat = document.getElementById('set-nama-singkat').value.trim();
+      appState.settings.kota = document.getElementById('set-kota-madrasah').value.trim();
+      appState.settings.namaMadrasah = document.getElementById('set-nama-madrasah').value.trim();
+      appState.settings.yayasan = document.getElementById('set-yayasan-madrasah').value.trim();
+      appState.settings.alamat = document.getElementById('set-alamat-madrasah').value.trim();
+      appState.settings.kepalaNama = document.getElementById('set-kepala-nama').value.trim();
+      appState.settings.kepalaNip = document.getElementById('set-kepala-nip').value.trim();
+      appState.settings.bendaharaNama = document.getElementById('set-bendahara-nama').value.trim();
+      appState.settings.bendaharaNip = document.getElementById('set-bendahara-nip').value.trim();
+
+      if (pendingUploadedLogo) {
+        appState.settings.logoUrl = pendingUploadedLogo;
+        pendingUploadedLogo = null;
+      }
+
+      setSyncOverlay(true, 'Menyimpan identitas madrasah ke Google Sheets...');
+      try {
+        const res = await callServer('saveSettings', appState.settings);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal menyimpan pengaturan.');
+
+        saveLocalCache(appState);
+        closeModal('modal-pengaturan');
+        refreshAllViews();
+        showToast('Identitas & logo MA NW SUELA berhasil disimpan.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    async function executeResetDemo() {
+      setSyncOverlay(true, 'Mereset data Google Sheets ke awal...');
+      try {
+        const demoData = getFallbackDemoData();
+        const res = await callServer('resetAllSheetData', demoData);
+        if (!res || !res.ok) throw new Error(res && res.message ? res.message : 'Gagal mereset data.');
+
+        appState = demoData;
+        saveLocalCache(appState);
+        closeModal('modal-reset');
+        refreshAllViews();
+        showToast('Data berhasil dikembalikan ke data awal MA NW SUELA.');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        setSyncOverlay(false);
+      }
+    }
+
+    function refreshAllViews() {
+      const logoSrc = appState.settings.logoUrl || DEFAULT_LOGO_MA_NW_SUELA;
+      document.title = `${appState.settings.namaSingkat} — Sistem Administrasi Bendahara ${appState.settings.namaMadrasah}`;
+      document.getElementById('sidebar-logo-img').src = logoSrc;
+      document.getElementById('mobile-header-logo').src = logoSrc;
+      document.getElementById('sidebar-madrasah-short').textContent = appState.settings.namaSingkat;
+      document.getElementById('sidebar-madrasah-name').textContent = appState.settings.namaMadrasah;
+      renderDashboard();
+      renderSppViews();
+      renderBKU();
+      renderRKAM();
+      renderPajakDanKas();
+      renderLPJ();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshAllViews();
+      syncFromGoogleSheets(false);
+    });
+  </script>
+</body>
+</html>
